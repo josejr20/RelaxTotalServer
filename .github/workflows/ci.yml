@@ -12,7 +12,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: backend/centromasajes
+        working-directory: Centro-de-masajes-Relax-Relax-main/backend/centromasajes
 
     steps:
       - name: Checkout código
