@@ -18,14 +18,22 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Configurar Java 17
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 21
+          cache: maven
 
       - name: Dar permisos a Maven Wrapper
         run: chmod +x mvnw
 
       - name: Compilar y ejecutar pruebas
         run: ./mvnw clean verify
+
+      - name: Publicar artefacto JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: centromasajes-build
+          path: Centro-de-masajes-Relax-Relax-main/backend/centromasajes/target/*.jar
