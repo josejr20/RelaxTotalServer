@@ -1,28 +1,38 @@
 package com.andreutp.centromasajes.service;
 
-import com.andreutp.centromasajes.dao.IAppointmentRepository;
-import com.andreutp.centromasajes.dao.IInvoiceRepository;
-import com.andreutp.centromasajes.dao.IPaymentRepository;
-import com.andreutp.centromasajes.dao.IUserRepository;
-import com.andreutp.centromasajes.dto.PaymentRequest;
-import com.andreutp.centromasajes.model.*;
-import com.andreutp.centromasajes.utils.EmailService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.andreutp.centromasajes.dao.IAppointmentRepository;
+import com.andreutp.centromasajes.dao.IInvoiceRepository;
+import com.andreutp.centromasajes.dao.IPaymentRepository;
+import com.andreutp.centromasajes.dao.IUserRepository;
+import com.andreutp.centromasajes.dto.PaymentRequest;
+import com.andreutp.centromasajes.model.AppointmentModel;
+import com.andreutp.centromasajes.model.InvoiceModel;
+import com.andreutp.centromasajes.model.PaymentModel;
+import com.andreutp.centromasajes.model.ServiceModel;
+import com.andreutp.centromasajes.model.UserModel;
+import com.andreutp.centromasajes.utils.EmailService;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -105,8 +115,15 @@ class PaymentServiceTest {
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(testAppointment));
         when(paymentRepository.save(any(PaymentModel.class))).thenReturn(testPayment);
         when(invoiceRepository.save(any(InvoiceModel.class))).thenReturn(testInvoice);
-        doNothing().when(emailService).enviarBoletaConPDF(anyString(), anyString(), anyString(), anyString(), any(Double.class));
-
+        doNothing().when(emailService)
+        .enviarCorreoConAdjunto(
+                anyString(),
+                anyString(),
+                anyString(),
+                any(byte[].class),
+                anyString()
+        );
+        
         PaymentModel result = paymentService.createPayment(paymentRequest);
 
         assertNotNull(result);
@@ -119,7 +136,14 @@ class PaymentServiceTest {
         verify(appointmentRepository, times(1)).findById(1L);
         verify(paymentRepository, times(2)).save(any(PaymentModel.class)); // 2 veces: inicial y con invoice
         verify(invoiceRepository, times(1)).save(any(InvoiceModel.class));
-        verify(emailService, times(1)).enviarBoletaConPDF(anyString(), anyString(), anyString(), anyString(), any(Double.class));
+        verify(emailService, times(1))
+        .enviarCorreoConAdjunto(
+                anyString(),
+                anyString(),
+                anyString(),
+                any(byte[].class),
+                anyString()
+        );
     }
 
     @Test
