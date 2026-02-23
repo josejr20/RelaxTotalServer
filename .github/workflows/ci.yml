@@ -7,32 +7,88 @@ on:
     branches: [ main ]
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: Centro-de-masajes-Relax-Relax-main/backend/centromasajes
 
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurar Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
 
-      - name: Dar permisos a Maven Wrapper
-        run: chmod +x mvnw
+      - run: chmod +x mvnw
 
-      - name: Compilar y ejecutar pruebas
-        run: ./mvnw clean verify
+      - name: Compilar
+        run: ./mvnw clean compile
 
-      - name: Publicar artefacto JAR
-        if: success()
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: Centro-de-masajes-Relax-Relax-main/backend/centromasajes
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - run: chmod +x mvnw
+
+      - name: Ejecutar pruebas con cobertura
+        run: ./mvnw test
+
+  quality:
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: Centro-de-masajes-Relax-Relax-main/backend/centromasajes
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - run: chmod +x mvnw
+
+      - name: Ejecutar Checkstyle
+        run: ./mvnw checkstyle:check
+
+  package:
+    runs-on: ubuntu-latest
+    needs: quality
+    defaults:
+      run:
+        working-directory: Centro-de-masajes-Relax-Relax-main/backend/centromasajes
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - run: chmod +x mvnw
+
+      - name: Generar JAR
+        run: ./mvnw package
+
+      - name: Publicar artefacto
         uses: actions/upload-artifact@v4
         with:
           name: centromasajes-build
