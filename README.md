@@ -11,4 +11,4 @@ El proyecto cuenta con un pipeline de Integración Continua configurado con GitH
 
 El pipeline se ejecuta automáticamente en cada push a la rama `main`.
 
-[![CI](https://github.com/josejr20/RelaxTotalServe/actions/workflows/ci.yml/badge.svg)](https://github.com/josejr20/RelaxTotalServe/actions/workflows/ci.yml)
+[![CI](https://github.com/josejr20/RelaxTotalServe/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/josejr20/RelaxTotalServe/actions/workflows/ci.yml)
