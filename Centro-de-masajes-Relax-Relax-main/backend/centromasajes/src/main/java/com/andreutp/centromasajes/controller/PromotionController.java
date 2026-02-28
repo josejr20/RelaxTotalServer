@@ -38,11 +38,6 @@ public class PromotionController {
         return promotionService.getAllPromotions();
     }
 
-    @GetMapping
-    //@PreAuthorize("hasAnyRole('USER','WORKER','ADMIN')")
-    public List<PromotionModel> getAllPromotions() {
-        return promotionService.getAllPromotions();
-    }
 
     // ------------------------
     // OBTENER PROMOCIÓN POR ID

@@ -19,13 +19,13 @@ public class BusinessConfigService {
     public BusinessConfigModel getConfig() {
         Optional<BusinessConfigModel> any = repository.findAll().stream().findFirst();
         return any.orElseGet(() -> {
-            BusinessConfigModel def = BusinessConfigModel.builder()
-                    .name("Relax Total")
-                    .address("Av. Principal 123, Ciudad")
-                    .phone("+1 (555) 123-4567")
-                    .email("info@relaxtotal.com")
-                    .schedule(null)
-                    .build();
+            // avoid Lombok builder in case annotation processing misbehaves; use explicit setters
+            BusinessConfigModel def = new BusinessConfigModel();
+            def.setName("Relax Total");
+            def.setAddress("Av. Principal 123, Ciudad");
+            def.setPhone("+1 (555) 123-4567");
+            def.setEmail("info@relaxtotal.com");
+            def.setSchedule(null);
             return repository.save(def);
         });
     }

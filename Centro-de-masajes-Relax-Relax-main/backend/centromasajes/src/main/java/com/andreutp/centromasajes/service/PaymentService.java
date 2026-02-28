@@ -81,15 +81,15 @@ public class PaymentService {
         // 2. preparar payment
         LocalDateTime payDate = request.getPaymentDate() != null ? request.getPaymentDate() : LocalDateTime.now();
 
-        PaymentModel payment = PaymentModel.builder()
-                .user(user)
-                .appointment(appointment)
-                .amount(request.getAmount())
-                .paymentDate(payDate)
-                .method(request.getMethod())
-                .status(PaymentModel.Status.PAID)
-                .coveredBySubscription(Boolean.TRUE.equals(request.getCoveredBySubscription()))
-                .build();
+        // avoid Lombok builder in case annotation processing fails
+        PaymentModel payment = new PaymentModel();
+        payment.setUser(user);
+        payment.setAppointment(appointment);
+        payment.setAmount(request.getAmount());
+        payment.setPaymentDate(payDate);
+        payment.setMethod(request.getMethod());
+        payment.setStatus(PaymentModel.Status.PAID);
+        payment.setCoveredBySubscription(Boolean.TRUE.equals(request.getCoveredBySubscription()));
 
         PaymentModel savedPayment = paymentRepository.save(payment);
 
@@ -107,17 +107,17 @@ public class PaymentService {
         }
 
         // 4. crear invoice relacionado
-        InvoiceModel invoice = InvoiceModel.builder()
-                .payment(savedPayment)
-                .user(user)
-                .appointment(appointment)
-                .type(tipoComprobante) 
-                .invoiceNumber(generateInvoiceNumber())
-                .customerName(user.getUsername())
-                .customerDoc(user.getDni())
-                .total(savedPayment.getAmount())
-                .status(InvoiceModel.Status.PENDING)
-                .build();
+        // manual creation to avoid reliance on Lombok builder
+        InvoiceModel invoice = new InvoiceModel();
+        invoice.setPayment(savedPayment);
+        invoice.setUser(user);
+        invoice.setAppointment(appointment);
+        invoice.setType(tipoComprobante);
+        invoice.setInvoiceNumber(generateInvoiceNumber());
+        invoice.setCustomerName(user.getUsername());
+        invoice.setCustomerDoc(user.getDni());
+        invoice.setTotal(savedPayment.getAmount());
+        invoice.setStatus(InvoiceModel.Status.PENDING);
 
         invoice = invoiceRepository.save(invoice);
 

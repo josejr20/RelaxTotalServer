@@ -44,18 +44,18 @@ public class InvoiceService {
         PaymentModel payment = paymentRepository.findById(request.getPaymentId())
                 .orElseThrow(() -> new RuntimeException("Pago no encontrado"));
 
-        InvoiceModel invoice = InvoiceModel.builder()
-                .payment(payment)
-                .appointment(payment.getAppointment())  // <--- asignamos la cita
-                .user(payment.getUser())
-                .type(InvoiceModel.Type.valueOf(request.getType().toUpperCase()))
-                .invoiceNumber(request.getInvoiceNumber())
-                .customerName(request.getCustomerName())
-                .customerDoc(request.getCustomerDoc())
-                .total(request.getTotal())
-                .notes(request.getNotes())
-                .status(InvoiceModel.Status.PENDING)
-                .build();
+        // build without Lombok in case annotation processing isn't available
+        InvoiceModel invoice = new InvoiceModel();
+        invoice.setPayment(payment);
+        invoice.setAppointment(payment.getAppointment());
+        invoice.setUser(payment.getUser());
+        invoice.setType(InvoiceModel.Type.valueOf(request.getType().toUpperCase()));
+        invoice.setInvoiceNumber(request.getInvoiceNumber());
+        invoice.setCustomerName(request.getCustomerName());
+        invoice.setCustomerDoc(request.getCustomerDoc());
+        invoice.setTotal(request.getTotal());
+        invoice.setNotes(request.getNotes());
+        invoice.setStatus(InvoiceModel.Status.PENDING);
 
         invoice = invoiceRepository.save(invoice);
 
