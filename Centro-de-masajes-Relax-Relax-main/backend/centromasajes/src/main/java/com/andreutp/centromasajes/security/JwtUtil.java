@@ -1,23 +1,30 @@
 package com.andreutp.centromasajes.security;
 
-import com.andreutp.centromasajes.model.UserModel;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.springframework.stereotype.Component;
+
+import com.andreutp.centromasajes.model.UserModel;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
 @Component
 public class JwtUtil {
 
     private static final String SECRET_KEY = "laClaveSuperSecretaParaJWT_123456789xd";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hora
+    // Nota: al multiplicar literales enteros el resultado también es int,
+    // por eso forzamos uno de los operandos a long para evitar warnings y
+    // posibles overflows.
+    private static final long EXPIRATION_TIME = 1000L * 60 * 60; // 1 hora
+
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 

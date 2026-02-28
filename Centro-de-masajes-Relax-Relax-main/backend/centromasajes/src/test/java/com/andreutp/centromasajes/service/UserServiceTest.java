@@ -1,30 +1,44 @@
 package com.andreutp.centromasajes.service;
 
-import com.andreutp.centromasajes.dao.IAppointmentRepository;
-import com.andreutp.centromasajes.dao.IRoleRepository;
-import com.andreutp.centromasajes.dao.IUserRepository;
-import com.andreutp.centromasajes.dao.IWorkerAvailabilityRepository;
-import com.andreutp.centromasajes.dto.UserClientDTO;
-import com.andreutp.centromasajes.dto.UserWorkerDTO;
-import com.andreutp.centromasajes.model.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.andreutp.centromasajes.dao.IAppointmentRepository;
+import com.andreutp.centromasajes.dao.IRoleRepository;
+import com.andreutp.centromasajes.dao.IUserRepository;
+import com.andreutp.centromasajes.dao.IWorkerAvailabilityRepository;
+import com.andreutp.centromasajes.dto.UserClientDTO;
+import com.andreutp.centromasajes.dto.UserWorkerDTO;
+import com.andreutp.centromasajes.model.AppointmentModel;
+import com.andreutp.centromasajes.model.RoleModel;
+import com.andreutp.centromasajes.model.ServiceModel;
+import com.andreutp.centromasajes.model.UserModel;
+import com.andreutp.centromasajes.model.WorkerAvailabilityModel;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -57,6 +71,9 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Mockito will construct the service via constructor injection; passwordEncoder
+        // isn't part of the constructor so we have to assign it manually.
+        userService.passwordEncoder = passwordEncoder;
         userRole = new RoleModel();
         userRole.setId(1L);
         userRole.setName("USER");
@@ -107,22 +124,22 @@ class UserServiceTest {
         availability.setWorker(testWorker);
     }
 
-    /*@Test
+    @Test
     void testGetUsers() {
         // Arrange
         List<UserModel> users = Arrays.asList(testUser, testWorker);
         when(userRepository.findAll()).thenReturn(users);
 
         // Act
-        ArrayList<UserModel> result = userService.getUsers();
+        List<UserModel> result = userService.getUsers();
 
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         verify(userRepository, times(1)).findAll();
-    }*/
+    }
 
-   /* @Test
+    @Test
     void testSaveUser_WithPlainPassword() {
         // Arrange
         UserModel newUser = new UserModel();
@@ -140,7 +157,7 @@ class UserServiceTest {
         assertNotNull(result);
         verify(passwordEncoder, times(1)).encode("plainPassword");
         verify(userRepository, times(1)).save(newUser);
-    }*/
+    }
 
     @Test
     void testSaveUser_WithEncodedPassword() {
@@ -181,6 +198,57 @@ class UserServiceTest {
         // Assert
         assertFalse(result.isPresent());
         verify(userRepository, times(1)).findById(999L);
+    }
+
+    @Test
+    void testUpdateById_Success() {
+        // Arrange
+        UserModel updated = new UserModel();
+        updated.setUsername("nuevo");
+        updated.setEmail("nuevo@example.com");
+        updated.setPassword("pass");
+        updated.setPhone("111");
+        updated.setDni("222");
+        updated.setEnabled(false);
+        updated.setRole(userRole);
+        updated.setCreatedAt(null);
+        updated.setUpdatedAt(null);
+
+        UserModel existing = new UserModel();
+        existing.setId(1L);
+        existing.setUsername("old");
+        existing.setEmail("old@example.com");
+        existing.setPassword("oldpass");
+        existing.setPhone("999");
+        existing.setDni("888");
+        existing.setEnabled(true);
+        existing.setRole(userRole);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.save(any(UserModel.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Act
+        UserModel result = userService.updateById(updated, 1L);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("nuevo", result.getUsername());
+        assertEquals("nuevo@example.com", result.getEmail());
+        assertFalse(result.getEnabled());
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).save(any(UserModel.class));
+    }
+
+    @Test
+    void testUpdateById_NotFound() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            userService.updateById(new UserModel(), 999L);
+        });
+        assertEquals("Usuario no encontrado", ex.getMessage());
+        verify(userRepository, times(1)).findById(999L);
+        verify(userRepository, never()).save(any(UserModel.class));
     }
 
     @Test
@@ -279,7 +347,34 @@ class UserServiceTest {
         verify(availabilityRepository, times(1)).findByWorkerId(2L);
     }
 
-    /*@Test
+    @Test
+    void testGetAvailableSlots_NoUser() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+        assertTrue(userService.getAvailableSlots(999L, "2025-01-01", 60).isEmpty());
+        verify(userRepository, times(1)).findById(999L);
+    }
+
+    @Test
+    void testGetAvailableSlots_WithAvailability() {
+        WorkerAvailabilityModel avail = new WorkerAvailabilityModel();
+        avail.setDay(LocalDate.now().getDayOfWeek().name());
+        avail.setActivo(true);
+        avail.setInicio("09:00");
+        avail.setFin("11:00");
+
+        UserModel worker = new UserModel();
+        worker.setId(3L);
+        worker.setAvailability(List.of(avail));
+
+        when(userRepository.findById(3L)).thenReturn(Optional.of(worker));
+
+        List<String> slots = userService.getAvailableSlots(3L, LocalDate.now().toString(), 60);
+        assertNotNull(slots);
+        // the result may be empty if times do not align, just verify method executed
+        verify(userRepository, times(1)).findById(3L);
+    }
+
+    @Test
     void testUpdateWorker_Success() {
         // Arrange
         UserModel updatedWorker = new UserModel();
@@ -306,7 +401,20 @@ class UserServiceTest {
         verify(passwordEncoder, times(1)).encode("newPassword");
         verify(userRepository, times(1)).save(testWorker);
     }
-*/
+
+    @Test
+    void testUpdateWorker_AlreadyEncodedPassword() {
+        UserModel updatedWorker = new UserModel();
+        updatedWorker.setPassword("$2a$alreadyEncoded");
+        when(userRepository.findById(2L)).thenReturn(Optional.of(testWorker));
+        when(userRepository.save(any(UserModel.class))).thenReturn(testWorker);
+
+        UserModel result = userService.updateWorker(updatedWorker, 2L);
+        assertNotNull(result);
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, times(1)).save(testWorker);
+    }
+
     @Test
     void testUpdateWorker_NotFound() {
         // Arrange

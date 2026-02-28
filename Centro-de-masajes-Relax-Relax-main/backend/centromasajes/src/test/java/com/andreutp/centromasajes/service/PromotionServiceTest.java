@@ -1,23 +1,30 @@
 package com.andreutp.centromasajes.service;
 
-import com.andreutp.centromasajes.dao.IPromotionRepository;
-import com.andreutp.centromasajes.model.PromotionModel;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.andreutp.centromasajes.dao.IPromotionRepository;
+import com.andreutp.centromasajes.model.PromotionModel;
 
 @ExtendWith(MockitoExtension.class)
 class PromotionServiceTest {
@@ -149,10 +156,9 @@ class PromotionServiceTest {
         assertEquals(new BigDecimal("25.00"), result.getDiscountPercent());
         assertFalse(result.getActive());
 
-        verify(promotionRepository, times(2)).findById(1L); // Called twice in service
+        verify(promotionRepository, times(1)).findById(1L); // ahora solo se llama una vez
         verify(promotionRepository, times(1)).save(testPromotion);
     }
-/*
     @Test
     void testUpdatePromotion_WithNullDates() {
         // Arrange
@@ -165,8 +171,8 @@ class PromotionServiceTest {
         updatedPromotion.setEndDate(null);
         updatedPromotion.setActive(true);
 
-        LocalDateTime originalStart = testPromotion.getStartDate();
-        LocalDateTime originalEnd = testPromotion.getEndDate();
+        LocalDate originalStart = testPromotion.getStartDate();
+        LocalDate originalEnd = testPromotion.getEndDate();
 
         when(promotionRepository.findById(1L)).thenReturn(Optional.of(testPromotion));
         when(promotionRepository.save(any(PromotionModel.class))).thenReturn(testPromotion);
@@ -179,7 +185,7 @@ class PromotionServiceTest {
         assertEquals(originalStart, result.getStartDate());
         assertEquals(originalEnd, result.getEndDate());
         verify(promotionRepository, times(1)).save(testPromotion);
-    }*/
+    }
 
     @Test
     void testUpdatePromotion_NotFound() {

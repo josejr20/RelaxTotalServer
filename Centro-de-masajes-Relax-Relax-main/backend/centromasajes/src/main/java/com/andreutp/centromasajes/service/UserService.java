@@ -1,19 +1,5 @@
 package com.andreutp.centromasajes.service;
 
-import com.andreutp.centromasajes.dao.IAppointmentRepository;
-import com.andreutp.centromasajes.dao.IRoleRepository;
-import com.andreutp.centromasajes.dao.IWorkerAvailabilityRepository;
-import com.andreutp.centromasajes.dto.UserClientDTO;
-import com.andreutp.centromasajes.dto.UserWorkerDTO;
-import com.andreutp.centromasajes.dto.WorkAvailabilityDTO;
-import com.andreutp.centromasajes.model.AppointmentModel;
-import com.andreutp.centromasajes.model.UserModel;
-import com.andreutp.centromasajes.dao.IUserRepository;
-import com.andreutp.centromasajes.model.WorkerAvailabilityModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.andreutp.centromasajes.dao.IAppointmentRepository;
+import com.andreutp.centromasajes.dao.IRoleRepository;
+import com.andreutp.centromasajes.dao.IUserRepository;
+import com.andreutp.centromasajes.dao.IWorkerAvailabilityRepository;
+import com.andreutp.centromasajes.dto.UserClientDTO;
+import com.andreutp.centromasajes.dto.UserWorkerDTO;
+import com.andreutp.centromasajes.dto.WorkAvailabilityDTO;
+import com.andreutp.centromasajes.model.AppointmentModel;
+import com.andreutp.centromasajes.model.UserModel;
+import com.andreutp.centromasajes.model.WorkerAvailabilityModel;
 
 @Service
 public class UserService {
@@ -48,8 +49,9 @@ public class UserService {
         this.availabilityRepository = availabilityRepository;
     }
 
-    public ArrayList<UserModel> getUsers() {
-        return (ArrayList<UserModel>) userRepository.findAll();
+    public List<UserModel> getUsers() {
+        // convert to mutable list to avoid casting issues
+        return new ArrayList<>(userRepository.findAll());
     }
 
 
@@ -66,7 +68,9 @@ public class UserService {
     }
 
     public UserModel updateById(UserModel request, Long id) {
-        UserModel user = userRepository.findById(id).get();
+        // validar existencia antes de usar el Optional
+        UserModel user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
@@ -78,7 +82,7 @@ public class UserService {
         user.setCreatedAt(request.getCreatedAt());
         user.setUpdatedAt(request.getUpdatedAt());
 
-        return user;
+        return userRepository.save(user);
     }
 
     public Boolean deleteUser(Long id) {
@@ -157,15 +161,15 @@ public class UserService {
         UserModel worker = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
 
-        worker.setUsername(request.getUsername());
-
         // Solo cifrar si la contraseña fue cambiada
         if (request.getPassword() != null && !request.getPassword().startsWith("$2a$")) {
             worker.setPassword(passwordEncoder.encode(request.getPassword()));
+        } else if (request.getPassword() != null) {
+            // contraseña ya codificada, mantener la misma o actualizar si se proporcionó
+            worker.setPassword(request.getPassword());
         }
 
         worker.setUsername(request.getUsername());
-        worker.setPassword(request.getPassword());
         worker.setPhone(request.getPhone());
         worker.setEmail(request.getEmail());
         worker.setDni(request.getDni());

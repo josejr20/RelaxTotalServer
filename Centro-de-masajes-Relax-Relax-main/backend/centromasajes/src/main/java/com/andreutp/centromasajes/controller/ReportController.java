@@ -1,15 +1,29 @@
 package com.andreutp.centromasajes.controller;
 
 import java.util.List;
-import com.andreutp.centromasajes.service.ReportService;
-import com.andreutp.centromasajes.utils.PdfGenerator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.andreutp.centromasajes.service.ReportService;
+import com.andreutp.centromasajes.utils.PdfGenerator;
 
 @RestController
 @RequestMapping("/reports")
 public class ReportController {
+    // constantes utilizadas por varios endpoints para evitar duplicación
+    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String PDF_CONTENT_TYPE = "application/pdf";
+
     @Autowired
     private ReportService reportService;
 
@@ -32,8 +46,8 @@ public class ReportController {
         byte[] excelBytes = reportService.generarExcelClientes();
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=ReporteClientes.xlsx")
-                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteClientes.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
                 .body(excelBytes);
     }
 
@@ -49,8 +63,8 @@ public class ReportController {
         byte[] excelBytes = reportService.generarExcelTrabajadores();
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=ReporteTrabajadores.xlsx")
-                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteTrabajadores.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
                 .body(excelBytes);
     }
 
@@ -66,8 +80,8 @@ public class ReportController {
         byte[] excelBytes = reportService.generarExcelServicios();
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=ReporteServicios.xlsx")
-                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteServicios.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
                 .body(excelBytes);
     }
 
@@ -82,8 +96,8 @@ public class ReportController {
         byte[] excelBytes = reportService.generarExcelReservas();
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=ReporteReservas.xlsx")
-                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteReservas.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
                 .body(excelBytes);
     }
 
@@ -94,8 +108,8 @@ public class ReportController {
         byte[] pdfBytes = PdfGenerator.generateSampleTicketPdf();
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=BoletaDemo.pdf")
-                .header("Content-Type", "application/pdf")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=BoletaDemo.pdf")
+                .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
                 .body(pdfBytes);
     }
     // un poco mas de diseno
@@ -112,8 +126,8 @@ public class ReportController {
         );
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=BoletaPersonalizada.pdf")
-                .header("Content-Type", "application/pdf")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=BoletaPersonalizada.pdf")
+                .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
                 .body(pdfBytes);
     }
     //con datos test estaticos pero se puede cambiar los datos estticos al jso nq entrega el front
@@ -122,8 +136,8 @@ public class ReportController {
         byte[] pdfBytes = PdfGenerator.generateInvoicePdf("Juan Pérez", "INV-TEST-001", 200.50);
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=BoletaTest.pdf")
-                .header("Content-Type", "application/pdf")
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=BoletaTest.pdf")
+                .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
                 .body(pdfBytes);
     }
 
@@ -148,8 +162,8 @@ public ResponseEntity<byte[]> descargarFactura(
     );
 
     return ResponseEntity.ok()
-            .header("Content-Disposition", "attachment; filename=Factura-" + numero + ".pdf")
-            .header("Content-Type", "application/pdf")
+            .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=Factura-" + numero + ".pdf")
+            .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
             .body(pdfBytes);
 }
 

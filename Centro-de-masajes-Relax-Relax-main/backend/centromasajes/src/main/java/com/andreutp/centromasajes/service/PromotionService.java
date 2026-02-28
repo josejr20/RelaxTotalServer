@@ -1,12 +1,12 @@
 package com.andreutp.centromasajes.service;
 
-import com.andreutp.centromasajes.dao.IPromotionRepository;
-import com.andreutp.centromasajes.model.PromotionModel;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.andreutp.centromasajes.dao.IPromotionRepository;
+import com.andreutp.centromasajes.model.PromotionModel;
 
 @Service
 public class PromotionService {
@@ -50,19 +50,16 @@ public class PromotionService {
 
     // Actualizar promoción
     public PromotionModel updatePromotion(Long id, PromotionModel updated) {
-        promotionRepository.findById(id)
+        // usamos el valor devuelto por orElseThrow en lugar de ignorarlo
+        PromotionModel existing = promotionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Promoción no encontrada"));
 
-        PromotionModel existing = getPromotionById(id);
         existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
         existing.setDiscountPercent(updated.getDiscountPercent());
         existing.setDiscountAmount(updated.getDiscountAmount());
-        existing.setStartDate(updated.getStartDate());
-        existing.setEndDate(updated.getEndDate());
         existing.setActive(updated.getActive());
         existing.setImageUrl(updated.getImageUrl());
-
 
         // Validamos fechas: si vienen nulas, mantenemos las existentes
         if (updated.getStartDate() != null) {
