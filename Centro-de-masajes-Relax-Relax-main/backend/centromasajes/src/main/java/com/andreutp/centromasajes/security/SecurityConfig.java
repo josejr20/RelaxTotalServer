@@ -29,8 +29,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(
-                auth -> auth
-                        .anyRequest().permitAll()
+                        auth -> auth
+                        // allow unauthenticated access to authentication endpoints
+                        .requestMatchers("/auth/**").permitAll()
+                        // dev endpoints should only be available when profile is active;
+                        // restriction at runtime is handled by @Profile, but we still
+                        // require authentication for safety
+                        .requestMatchers("/dev/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
         )       .httpBasic(httpBasic -> httpBasic.disable())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);

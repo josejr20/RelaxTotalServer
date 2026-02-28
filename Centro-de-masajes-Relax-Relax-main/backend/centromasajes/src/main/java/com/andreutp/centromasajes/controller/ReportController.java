@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.andreutp.centromasajes.service.ReportService;
 import com.andreutp.centromasajes.utils.PdfGenerator;
 
+/**
+ * Endpoints relacionados con generación y descarga de reportes en
+ * formato Excel y PDF. Utiliza {@link com.andreutp.centromasajes.service.ReportService}
+ * para la lógica de negocio y centraliza la construcción de respuestas
+ * mediante encabezados constants.
+ */
 @RestController
 @RequestMapping("/reports")
 public class ReportController {
@@ -26,6 +32,14 @@ public class ReportController {
 
     @Autowired
     private ReportService reportService;
+
+    // helper para construir respuestas de descarga con el mimetype y nombre
+    private ResponseEntity<byte[]> buildAttachment(byte[] data, String filename, String contentType) {
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .header(HEADER_CONTENT_TYPE, contentType)
+                .body(data);
+    }
 
     //Pagos del user por pdf por correo
     @PostMapping("/pagos/{userId}")
@@ -161,10 +175,7 @@ public ResponseEntity<byte[]> descargarFactura(
             cliente, numero, descripcion, 1, total, metodoPago, "ORD-" + System.currentTimeMillis()
     );
 
-    return ResponseEntity.ok()
-            .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=Factura-" + numero + ".pdf")
-            .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
-            .body(pdfBytes);
+    return buildAttachment(pdfBytes, "Factura-" + numero + ".pdf", PDF_CONTENT_TYPE);
 }
 
 //FACTURA: ENVÍO POR EMAIL (POST JSON) 

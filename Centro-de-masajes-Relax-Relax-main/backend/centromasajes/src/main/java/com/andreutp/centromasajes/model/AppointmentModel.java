@@ -42,6 +42,7 @@ public class AppointmentModel {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private Status status = Status.PENDING;
 
     @ManyToOne
@@ -52,6 +53,7 @@ public class AppointmentModel {
     private String notes;
 
     @Column(name = "created_at", nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Status {

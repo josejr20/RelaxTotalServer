@@ -24,6 +24,11 @@ import com.andreutp.centromasajes.model.UserModel;
 import com.andreutp.centromasajes.model.WorkerAvailabilityModel;
 
 @Service
+/**
+ * Servicio central para gestionar usuarios, clientes y trabajadores.
+ * Contiene lógica para creación, actualización y consulta, además de
+ * utilidades específicas como generación de horarios disponibles.
+ */
 public class UserService {
 
     @Autowired

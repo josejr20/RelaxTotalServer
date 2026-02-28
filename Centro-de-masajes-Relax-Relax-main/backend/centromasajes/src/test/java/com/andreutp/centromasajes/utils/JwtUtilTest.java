@@ -6,23 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import com.andreutp.centromasajes.model.RoleModel;
 import com.andreutp.centromasajes.model.UserModel;
 import com.andreutp.centromasajes.security.JwtUtil;
 
-@SpringBootTest
 class JwtUtilTest {
 
-    @Autowired
     private JwtUtil jwtUtil;
-
     private UserModel user;
 
     @BeforeEach
     void setUp() {
+        jwtUtil = new JwtUtil();
         user = new UserModel();
         user.setId(42L);
         user.setUsername("johndoe");

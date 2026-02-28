@@ -50,5 +50,6 @@ public class PlanModel {
     private String duracion_unidad;
 
     @Column(name = "created_at", nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

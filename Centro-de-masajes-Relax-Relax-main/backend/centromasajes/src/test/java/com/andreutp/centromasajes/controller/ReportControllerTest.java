@@ -50,4 +50,24 @@ class ReportControllerTest {
         assertNotNull(resp.getHeaders().getFirst("Content-Disposition"));
         assertTrue(resp.getHeaders().getFirst("Content-Disposition").contains("BoletaDemo.pdf"));
     }
+
+    @Test
+    void descargarOtherReports_shouldUseHelper() {
+        byte[] dummy = new byte[]{4,5,6};
+        when(reportService.generarExcelTrabajadores()).thenReturn(dummy);
+        ResponseEntity<byte[]> resp1 = controller.descargarReporteTrabajadores();
+        assertEquals(200, resp1.getStatusCode().value());
+        assertArrayEquals(dummy, resp1.getBody());
+        assertNotNull(resp1.getHeaders().getFirst("Content-Disposition"));
+
+        when(reportService.generarExcelServicios()).thenReturn(dummy);
+        ResponseEntity<byte[]> resp2 = controller.descargarReporteServicios();
+        assertEquals(200, resp2.getStatusCode().value());
+        assertArrayEquals(dummy, resp2.getBody());
+
+        when(reportService.generarExcelReservas()).thenReturn(dummy);
+        ResponseEntity<byte[]> resp3 = controller.descargarReporteReservas();
+        assertEquals(200, resp3.getStatusCode().value());
+        assertArrayEquals(dummy, resp3.getBody());
+    }
 }

@@ -49,10 +49,12 @@ public class InvoiceModel {
     private String notes;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private Status status = Status.PENDING;
 
     public enum Status {

@@ -36,15 +36,18 @@ public class PaymentModel {
     private Double amount;
 
     @Column(name = "payment_date", nullable = false)
+    @Builder.Default
     private LocalDateTime paymentDate = LocalDateTime.now();;
 
     @Column(length = 50)
     private String method;
 
     @Column(name = "created_at", nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "covered_by_subscription", nullable = false)
+    @Builder.Default
     private Boolean coveredBySubscription = false;
 
     public enum Status {
@@ -56,5 +59,6 @@ public class PaymentModel {
 
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Status status = Status.PENDING;
 }

@@ -38,8 +38,10 @@ public class ServiceModel {
     @Column(name = "base_price")
     private Double baseprice;
 
+    @Builder.Default
     private Boolean active = true;
 
+    @Builder.Default
     private LocalDateTime createAt = LocalDateTime.now();
 
 

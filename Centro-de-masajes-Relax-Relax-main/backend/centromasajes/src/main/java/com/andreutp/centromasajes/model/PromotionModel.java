@@ -32,9 +32,11 @@ public class PromotionModel {
     private String imageUrl;
 
     @Column(name = "discount_percent", precision = 5, scale = 2)
+    @Builder.Default
     private BigDecimal discountPercent = BigDecimal.ZERO;
 
     @Column(name = "discount_amount", precision = 10, scale = 2)
+    @Builder.Default
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Column(name = "start_date", nullable = false)
@@ -44,9 +46,11 @@ public class PromotionModel {
     private LocalDate endDate;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @Column(name = "created_at", nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
 }
