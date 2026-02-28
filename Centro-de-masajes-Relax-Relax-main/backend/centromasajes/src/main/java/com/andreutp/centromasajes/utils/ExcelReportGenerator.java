@@ -9,36 +9,93 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
-public class ExcelReportGenerator {
-
-    @Autowired
-    private IAppointmentRepository appointmentRepository;
+/**
+ * Utility class for generating Excel reports using Apache POI.  All methods are
+ * static; the class cannot be instantiated.  The previous implementation
+ * contained a great deal of duplicated logic in each report method (workbook
+ * creation, header row construction, auto‑sizing columns, exception handling).
+ * That code has been centralised into helpers below to satisfy Sonar
+ * duplication rules and make maintenance easier.  Methods also include
+ * javadoc for improved documentation and coverage.
+ */
+public final class ExcelReportGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(ExcelReportGenerator.class);
-    //APACHE POI PARA EXCEL PORQUE NO DA PDF DIRECTAMENTE xd
 
+    // utility class, non-instantiable
+    private ExcelReportGenerator() { }
+
+    /* helper factories -------------------------------------------------- */
+
+    /**
+     * Create a new workbook + default styles (header/normal/alternate).
+     */
+    private static ExcelStyles initWorkbook(Workbook workbook) {
+        return createStyles(workbook);
+    }
+
+    /**
+     * Build header row with provided column labels.
+     */
+    private static void createHeaderRow(Sheet sheet, String[] headers, ExcelStyles styles) {
+        Row header = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = header.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(styles.headerStyle);
+        }
+    }
+
+    /**
+     * Apply a style to every cell in a row.
+     */
+    private static void applyRowStyle(Row row, CellStyle style, int cols) {
+        for (int i = 0; i < cols; i++) {
+            row.getCell(i).setCellStyle(style);
+        }
+    }
+
+    /**
+     * Auto-size all columns in the sheet based on header length.
+     */
+    private static void autoSizeColumns(Sheet sheet, int cols) {
+        for (int i = 0; i < cols; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    /**
+     * Write workbook contents to byte array, handling IOExceptions.
+     */
+    private static byte[] toByteArray(Workbook workbook) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            logger.error("Error writing workbook to bytes", e);
+            throw new RuntimeException("Error generando Excel: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Generate a spreadsheet containing payment information.  Header and row
+     * styling is applied uniformly; workbook writing and exception handling are
+     * delegated to helpers to avoid repetition.
+     */
     public static byte[] generarReportePagos(List<PaymentModel> pagos) {
         logger.info("Generando Excel para {} pagos", pagos.size());
+        String[] columnas = {"ID", "Cliente", "Monto", "Método", "Fecha"};
 
         try (Workbook workbook = new XSSFWorkbook()) {
-            ExcelStyles styles = createStyles(workbook);
+            ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Pagos");
+            createHeaderRow(sheet, columnas, styles);
 
-            // ENCABEZADOS
-            Row header = sheet.createRow(0);
-            String[] columnas = {"ID", "Cliente", "Monto", "Método", "Fecha"};
-            for (int i = 0; i < columnas.length; i++) {
-                Cell cell = header.createCell(i);
-                cell.setCellValue(columnas[i]);
-                cell.setCellStyle(styles.headerStyle);
-            }
-
-            // FILAS
             int rowNum = 1;
             for (PaymentModel p : pagos) {
                 Row row = sheet.createRow(rowNum);
@@ -50,60 +107,44 @@ public class ExcelReportGenerator {
                 row.createCell(3).setCellValue(p.getMethod().toString());
                 row.createCell(4).setCellValue(p.getCreatedAt() != null ? p.getCreatedAt().toString() : "");
 
-                for (int i = 0; i < columnas.length; i++) {
-                    row.getCell(i).setCellStyle(rowStyle);
-                }
-
+                applyRowStyle(row, rowStyle, columnas.length);
                 rowNum++;
             }
 
-            for (int i = 0; i < columnas.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            // Guardar a bytes
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            workbook.write(out);
-
-            // OPCIONAL: guardar copia física con Commons IO TAMBIEN PARA PRUEBAS O DEBUG fino
-           /* File tempFile = new File("ReportePagos.xlsx");
-            FileUtils.writeByteArrayToFile(tempFile, out.toByteArray());
-            logger.info("Archivo Excel temporal guardado en {}", tempFile.getAbsolutePath());
-*/
-            return out.toByteArray();
-
+            autoSizeColumns(sheet, columnas.length);
+            return toByteArray(workbook);
         } catch (Exception e) {
-            logger.error("Error generando Excel", e);
-            throw new RuntimeException("Error generando Excel: " + e.getMessage(), e);
+            logger.error("Error generando reporte de pagos", e);
+            throw new RuntimeException("Error generando Excel de pagos", e);
         }
     }
 
 
-    // --- Clientes ---
+    /**
+     * Generate a sheet listing client details; uses the appointment repository
+     * to calculate the last visit, number of services and type of last service.
+     * The repository is provided as a parameter so the method remains static
+     * and testable.
+     */
     public static byte[] generarReporteClientes(List<UserModel> clientes, IAppointmentRepository appointmentRepository) {
-        try (Workbook workbook = new XSSFWorkbook()) {
-            ExcelStyles styles = createStyles(workbook);
-            Sheet sheet = workbook.createSheet("Clientes");
+        String[] columnas = {"ID", "Nombre", "Email", "Teléfono", "Última Visita", "Servicios", "Tipo Masaje"};
 
-            String[] columnas = {"ID", "Nombre", "Email", "Teléfono", "Última Visita", "Servicios", "Tipo Masaje"};
-            Row header = sheet.createRow(0);
-            for (int i = 0; i < columnas.length; i++) {
-                Cell c = header.createCell(i);
-                c.setCellValue(columnas[i]);
-                c.setCellStyle(styles.headerStyle);
-            }
+        try (Workbook workbook = new XSSFWorkbook()) {
+            ExcelStyles styles = initWorkbook(workbook);
+            Sheet sheet = workbook.createSheet("Clientes");
+            createHeaderRow(sheet, columnas, styles);
 
             int rowNum = 1;
-            for (UserModel c : clientes) {
+            for (UserModel cliente : clientes) {
                 Row row = sheet.createRow(rowNum);
                 CellStyle rowStyle = (rowNum % 2 == 0) ? styles.normalStyle : styles.alternateStyle;
 
-                row.createCell(0).setCellValue(c.getId());
-                row.createCell(1).setCellValue(c.getUsername());
-                row.createCell(2).setCellValue(c.getEmail());
-                row.createCell(3).setCellValue(c.getPhone());
+                row.createCell(0).setCellValue(cliente.getId());
+                row.createCell(1).setCellValue(cliente.getUsername());
+                row.createCell(2).setCellValue(cliente.getEmail());
+                row.createCell(3).setCellValue(cliente.getPhone());
 
-                List<AppointmentModel> citas = appointmentRepository.findByUserIdOrderByAppointmentStartDesc(c.getId());
+                List<AppointmentModel> citas = appointmentRepository.findByUserIdOrderByAppointmentStartDesc(cliente.getId());
                 if (!citas.isEmpty()) {
                     AppointmentModel last = citas.get(0);
                     row.createCell(4).setCellValue(last.getAppointmentStart().toString());
@@ -115,18 +156,14 @@ public class ExcelReportGenerator {
                     row.createCell(6).setCellValue("-");
                 }
 
-                for (int i = 0; i < columnas.length; i++) {
-                    row.getCell(i).setCellStyle(rowStyle);
-                }
+                applyRowStyle(row, rowStyle, columnas.length);
                 rowNum++;
             }
 
-            for (int i = 0; i < columnas.length; i++) sheet.autoSizeColumn(i);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            workbook.write(out);
-            return out.toByteArray();
+            autoSizeColumns(sheet, columnas.length);
+            return toByteArray(workbook);
         } catch (Exception e) {
+            logger.error("Error generando reporte de clientes", e);
             throw new RuntimeException("Error generando Excel de clientes", e);
         }
     }
@@ -135,17 +172,11 @@ public class ExcelReportGenerator {
 
     // Trabajadores
     public static byte[] generarReporteTrabajadores(List<UserModel> trabajadores) {
+        String[] columnas = {"ID", "Nombre", "Email", "Teléfono", "DNI", "Especialidad", "Estado", "Experiencia"};
         try (Workbook workbook = new XSSFWorkbook()) {
-            ExcelStyles styles = createStyles(workbook);
+            ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Trabajadores");
-
-            String[] columnas = {"ID", "Nombre", "Email", "Teléfono", "DNI", "Especialidad", "Estado", "Experiencia"};
-            Row header = sheet.createRow(0);
-            for (int i = 0; i < columnas.length; i++) {
-                Cell c = header.createCell(i);
-                c.setCellValue(columnas[i]);
-                c.setCellStyle(styles.headerStyle);
-            }
+            createHeaderRow(sheet, columnas, styles);
 
             int rowNum = 1;
             for (UserModel w : trabajadores) {
@@ -161,35 +192,25 @@ public class ExcelReportGenerator {
                 row.createCell(6).setCellValue(w.getEstado());
                 row.createCell(7).setCellValue(w.getExperiencia() != null ? w.getExperiencia() : 0);
 
-                for (int i = 0; i < columnas.length; i++) {
-                    row.getCell(i).setCellStyle(rowStyle);
-                }
+                applyRowStyle(row, rowStyle, columnas.length);
                 rowNum++;
             }
 
-            for (int i = 0; i < columnas.length; i++) sheet.autoSizeColumn(i);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            workbook.write(out);
-            return out.toByteArray();
+            autoSizeColumns(sheet, columnas.length);
+            return toByteArray(workbook);
         } catch (Exception e) {
+            logger.error("Error generando reporte de trabajadores", e);
             throw new RuntimeException("Error generando Excel de trabajadores", e);
         }
     }
 
     // Servicios
     public static byte[] generarReporteServicios(List<ServiceModel> servicios) {
+        String[] columnas = {"ID", "Nombre", "Precio", "Duración"};
         try (Workbook workbook = new XSSFWorkbook()) {
-            ExcelStyles styles = createStyles(workbook);
+            ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Servicios");
-
-            String[] columnas = {"ID", "Nombre", "Precio", "Duración"};
-            Row header = sheet.createRow(0);
-            for (int i = 0; i < columnas.length; i++) {
-                Cell c = header.createCell(i);
-                c.setCellValue(columnas[i]);
-                c.setCellStyle(styles.headerStyle);
-            }
+            createHeaderRow(sheet, columnas, styles);
 
             int rowNum = 1;
             for (ServiceModel s : servicios) {
@@ -201,38 +222,25 @@ public class ExcelReportGenerator {
                 row.createCell(2).setCellValue(s.getBaseprice());
                 row.createCell(3).setCellValue(s.getDurationMin());
 
-                for (int i = 0; i < columnas.length; i++) {
-                    row.getCell(i).setCellStyle(rowStyle);
-                }
-
+                applyRowStyle(row, rowStyle, columnas.length);
                 rowNum++;
             }
 
-            for (int i = 0; i < columnas.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            workbook.write(out);
-            return out.toByteArray();
+            autoSizeColumns(sheet, columnas.length);
+            return toByteArray(workbook);
         } catch (Exception e) {
+            logger.error("Error generando reporte de servicios", e);
             throw new RuntimeException("Error generando Excel de servicios", e);
         }
     }
 
     // Reservas
     public static byte[] generarReporteReservas(List<AppointmentModel> reservas) {
+        String[] columnas = {"ID", "Cliente", "Trabajador", "Servicio", "Fecha y Hora", "Estado"};
         try (Workbook workbook = new XSSFWorkbook()) {
-            ExcelStyles styles = createStyles(workbook);
+            ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Reservas");
-
-            String[] columnas = {"ID", "Cliente", "Trabajador", "Servicio", "Fecha y Hora", "Estado"};
-            Row header = sheet.createRow(0);
-            for (int i = 0; i < columnas.length; i++) {
-                Cell c = header.createCell(i);
-                c.setCellValue(columnas[i]);
-                c.setCellStyle(styles.headerStyle);
-            }
+            createHeaderRow(sheet, columnas, styles);
 
             int rowNum = 1;
             for (AppointmentModel a : reservas) {
@@ -246,18 +254,14 @@ public class ExcelReportGenerator {
                 row.createCell(4).setCellValue(a.getAppointmentStart().toString());
                 row.createCell(5).setCellValue(a.getStatus().toString());
 
-                for (int i = 0; i < columnas.length; i++) {
-                    row.getCell(i).setCellStyle(rowStyle);
-                }
+                applyRowStyle(row, rowStyle, columnas.length);
                 rowNum++;
             }
 
-            for (int i = 0; i < columnas.length; i++) sheet.autoSizeColumn(i);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            workbook.write(out);
-            return out.toByteArray();
+            autoSizeColumns(sheet, columnas.length);
+            return toByteArray(workbook);
         } catch (Exception e) {
+            logger.error("Error generando reporte de reservas", e);
             throw new RuntimeException("Error generando Excel de reservas", e);
         }
     }

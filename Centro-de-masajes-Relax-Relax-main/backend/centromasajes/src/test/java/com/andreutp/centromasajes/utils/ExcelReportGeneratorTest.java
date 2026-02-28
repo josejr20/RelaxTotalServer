@@ -1,8 +1,5 @@
 package com.andreutp.centromasajes.utils;
 
-import com.andreutp.centromasajes.model.PaymentModel;
-
-
 import com.andreutp.centromasajes.dao.IAppointmentRepository;
 import com.andreutp.centromasajes.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,8 +23,15 @@ public class ExcelReportGeneratorTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    // helper that verifies the output begins with PK (zip) header
+    private void assertXlsxHeader(byte[] bytes) {
+        assertTrue(bytes.length >= 2, "output too short");
+        assertEquals('P', bytes[0]);
+        assertEquals('K', bytes[1]);
+    }
+
     @Test
-    void testGenerarReportePagos() {
+    void testGenerarReportePagos() throws Exception {
         PaymentModel pago = new PaymentModel();
         pago.setId(1L);
         UserModel user = new UserModel();
@@ -42,10 +47,13 @@ public class ExcelReportGeneratorTest {
 
         assertNotNull(excelBytes);
         assertTrue(excelBytes.length > 0);
+
+        // quick sanity: XLSX files are ZIP archives, header PK
+        assertXlsxHeader(excelBytes);
     }
 
     @Test
-    void testGenerarReporteClientes() {
+    void testGenerarReporteClientes() throws Exception {
         UserModel cliente = new UserModel();
         cliente.setId(1L);
         cliente.setUsername("Juan");
@@ -66,6 +74,8 @@ public class ExcelReportGeneratorTest {
 
         assertNotNull(excelBytes);
         assertTrue(excelBytes.length > 0);
+
+        assertXlsxHeader(excelBytes);
     }
 
     @Test

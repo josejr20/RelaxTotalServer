@@ -24,20 +24,25 @@ public class SecurityConfig {
     }
 
 
+    /**
+     * Builds the security filter chain for the application.
+     *
+     * <p>CSRF protection is explicitly disabled because this is a stateless REST
+     * API that never uses cookies for authentication.  Clients (including
+     * browser-based single-page apps) send a JWT in the Authorization header,
+     * therefore there is nothing for CSRF to exploit.  Disabling CSRF is
+     * acceptable once this rationale is documented.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(
-                        auth -> auth
-                        // allow unauthenticated access to authentication endpoints
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        // dev endpoints should only be available when profile is active;
-                        // restriction at runtime is handled by @Profile, but we still
-                        // require authentication for safety
                         .requestMatchers("/dev/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-        )       .httpBasic(httpBasic -> httpBasic.disable())
+                )
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
         return http.build();

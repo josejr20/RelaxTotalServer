@@ -243,9 +243,8 @@ class UserServiceTest {
     void testUpdateById_NotFound() {
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-            userService.updateById(new UserModel(), 999L);
-        });
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userService.updateById(new UserModel(), 999L));
         assertEquals("Usuario no encontrado", ex.getMessage());
         verify(userRepository, times(1)).findById(999L);
         verify(userRepository, never()).save(any(UserModel.class));
