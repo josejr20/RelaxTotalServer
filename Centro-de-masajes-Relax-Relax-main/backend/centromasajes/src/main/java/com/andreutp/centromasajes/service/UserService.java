@@ -39,7 +39,7 @@ public class UserService {
     private final IWorkerAvailabilityRepository availabilityRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    protected PasswordEncoder passwordEncoder;
 
     public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
                        IAppointmentRepository appointmentRepository, IWorkerAvailabilityRepository availabilityRepository) {
