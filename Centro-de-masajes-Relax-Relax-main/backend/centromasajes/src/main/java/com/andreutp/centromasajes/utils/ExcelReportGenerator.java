@@ -26,6 +26,7 @@ import java.util.List;
 public final class ExcelReportGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(ExcelReportGenerator.class);
+    private static final String COLUMN_NAME = "Nombre"; // reused in several reports
 
     // utility class, non-instantiable
     private ExcelReportGenerator() { }
@@ -127,7 +128,7 @@ public final class ExcelReportGenerator {
      * and testable.
      */
     public static byte[] generarReporteClientes(List<UserModel> clientes, IAppointmentRepository appointmentRepository) {
-        String[] columnas = {"ID", "Nombre", "Email", "Teléfono", "Última Visita", "Servicios", "Tipo Masaje"};
+        String[] columnas = {"ID", COLUMN_NAME, "Email", "Teléfono", "Última Visita", "Servicios", "Tipo Masaje"};
 
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
@@ -172,7 +173,7 @@ public final class ExcelReportGenerator {
 
     // Trabajadores
     public static byte[] generarReporteTrabajadores(List<UserModel> trabajadores) {
-        String[] columnas = {"ID", "Nombre", "Email", "Teléfono", "DNI", "Especialidad", "Estado", "Experiencia"};
+        String[] columnas = {"ID", COLUMN_NAME, "Email", "Teléfono", "DNI", "Especialidad", "Estado", "Experiencia"};
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Trabajadores");
@@ -206,7 +207,7 @@ public final class ExcelReportGenerator {
 
     // Servicios
     public static byte[] generarReporteServicios(List<ServiceModel> servicios) {
-        String[] columnas = {"ID", "Nombre", "Precio", "Duración"};
+        String[] columnas = {"ID", COLUMN_NAME, "Precio", "Duración"};
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Servicios");

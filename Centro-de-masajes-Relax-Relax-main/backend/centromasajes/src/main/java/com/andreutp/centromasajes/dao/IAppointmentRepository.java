@@ -34,7 +34,6 @@ public interface IAppointmentRepository extends JpaRepository<AppointmentModel, 
     @Query("SELECT a FROM AppointmentModel a ORDER BY a.createdAt DESC")
     List<AppointmentModel> findTopByOrderByFechaCreacionDesc(@Param("limit") int limit);
 
-  /*  @Query("SELECT a FROM AppointmentModel a WHERE a.worker.id = :workerId AND FUNCTION('DATE', a.appointmentStart) = :day")
-    List<AppointmentModel> findByWorkerIdAndDay(@Param("workerId") Long workerId, @Param("day") LocalDate day);*/
+    // unused convenience method commented out earlier removed
 
 }

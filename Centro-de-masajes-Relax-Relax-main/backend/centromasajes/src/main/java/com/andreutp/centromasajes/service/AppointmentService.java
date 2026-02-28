@@ -21,6 +21,9 @@ import java.util.List;
 
 @Service
 public class AppointmentService {
+    public static final String USER_NOT_FOUND = "Usuario no encontrado";
+    public static final String WORKER_NOT_FOUND = "Trabajador no encontrado";
+    public static final String SERVICE_NOT_FOUND = "Servicio no encontrado";
     @Autowired
     private final IAppointmentRepository appointmentRepository;
 
@@ -57,13 +60,13 @@ public class AppointmentService {
     // Crear cita (validando que el worker no tenga otra a la misma hora)
     public AppointmentModel createAppointment(AppointmentRequest request) {
         UserModel user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         UserModel worker = userRepository.findById(request.getWorkerId())
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new RuntimeException(WORKER_NOT_FOUND));
 
         ServiceModel service = serviceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+                .orElseThrow(() -> new RuntimeException(SERVICE_NOT_FOUND));
 
         AppointmentModel appointment = new AppointmentModel();
         // Validar disponibilidad antes de crear la cita
@@ -118,11 +121,11 @@ public class AppointmentService {
         AppointmentModel existing = getAppointmentById(id);
 
         UserModel user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
         UserModel worker = userRepository.findById(request.getWorkerId())
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new RuntimeException(WORKER_NOT_FOUND));
         ServiceModel service = serviceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+                .orElseThrow(() -> new RuntimeException(SERVICE_NOT_FOUND));
 
         existing.setUser(user);
         existing.setWorker(worker);

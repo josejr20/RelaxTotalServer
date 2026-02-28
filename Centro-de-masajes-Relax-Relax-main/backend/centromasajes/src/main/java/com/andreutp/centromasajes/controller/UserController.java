@@ -209,7 +209,7 @@ public class UserController {
         List<AppointmentModel> citas = appointmentRepository.findByWorkerId(id)
                 .stream()
                 .filter(a -> a.getAppointmentStart().toLocalDate().equals(fecha))
-                .collect(Collectors.toList());
+                .toList();
 
         List<UserService.TimeInterval> ocupados = citas.stream()
                 .map(c -> new UserService.TimeInterval(
@@ -242,7 +242,7 @@ public class UserController {
 
 
     @PostMapping("/worker/{id}/availability")
-    public ResponseEntity<?> saveWorkerAvailability(
+    public ResponseEntity<String> saveWorkerAvailability(
             @PathVariable Long id,
             @RequestBody List<WorkerAvailabilityModel> availabilityList) {
 
