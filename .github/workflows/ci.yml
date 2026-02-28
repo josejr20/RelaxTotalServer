@@ -29,6 +29,11 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
+      - name: Clear Sonar cache
+        run: |
+          echo "Clearing Sonar cache to avoid corrupted plugin downloads"
+          rm -rf $HOME/.sonar/cache || true
+
       - name: Compile project
         run: ./mvnw clean compile
 
@@ -89,7 +94,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
-          ./mvnw -B verify sonar:sonar
+          ./mvnw -U -B verify sonar:sonar
           -Dsonar.projectKey=josejr20_RelaxTotalServer_AZyXhVvzan01mIuXPJ9I
           -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.login=${SONAR_TOKEN}
