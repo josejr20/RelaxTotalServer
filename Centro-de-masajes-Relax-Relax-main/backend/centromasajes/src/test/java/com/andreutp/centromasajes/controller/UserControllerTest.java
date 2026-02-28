@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.Optional;
 
@@ -35,6 +36,7 @@ public class UserControllerTest {
     private IRoleRepository roleRepository;
 
     @Test
+    @WithMockUser
     void testGetUserById() throws Exception {
         UserModel user = new UserModel();
         user.setId(1L);
