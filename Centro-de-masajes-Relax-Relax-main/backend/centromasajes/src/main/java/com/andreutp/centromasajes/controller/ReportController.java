@@ -1,0 +1,276 @@
+package com.andreutp.centromasajes.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.andreutp.centromasajes.service.ReportService;
+import com.andreutp.centromasajes.utils.PdfGenerator;
+
+/**
+ * Endpoints relacionados con generación y descarga de reportes en
+ * formato Excel y PDF. Utiliza {@link com.andreutp.centromasajes.service.ReportService}
+ * para la lógica de negocio y centraliza la construcción de respuestas
+ * mediante encabezados constants.
+ */
+@RestController
+@RequestMapping("/reports")
+public class ReportController {
+    // constantes utilizadas por varios endpoints para evitar duplicación
+    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String PDF_CONTENT_TYPE = "application/pdf";
+
+    @Autowired
+    private ReportService reportService;
+
+    // helper para construir respuestas de descarga con el mimetype y nombre
+    private ResponseEntity<byte[]> buildAttachment(byte[] data, String filename, String contentType) {
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .header(HEADER_CONTENT_TYPE, contentType)
+                .body(data);
+    }
+
+    //Pagos del user por pdf por correo
+    @PostMapping("/pagos/{userId}")
+    public ResponseEntity<String> enviarReporte(@PathVariable Long userId, @RequestParam String correo) {
+        reportService.enviarReportePagosUsuario(userId, correo);
+        return ResponseEntity.ok("Reporte enviado al correo: " + correo);
+    }
+
+    // NUEVOS para correos y para descargar xd los q tienen /download son para pc
+    @PostMapping("/clientes")
+    public ResponseEntity<String> enviarReporteClientes(@RequestParam String correo) {
+        reportService.enviarReporteClientes(correo);
+        return ResponseEntity.ok("Reporte de clientes enviado al correo: " + correo);
+    }
+
+    @GetMapping("/clientes/download")
+    public ResponseEntity<byte[]> descargarReporteClientes() {
+        byte[] excelBytes = reportService.generarExcelClientes();
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteClientes.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
+                .body(excelBytes);
+    }
+
+
+    @PostMapping("/trabajadores")
+    public ResponseEntity<String> enviarReporteTrabajadores(@RequestParam String correo) {
+        reportService.enviarReporteTrabajadores(correo);
+        return ResponseEntity.ok("Reporte de trabajadores enviado al correo: " + correo);
+    }
+
+    @GetMapping("/trabajadores/download")
+    public ResponseEntity<byte[]> descargarReporteTrabajadores() {
+        byte[] excelBytes = reportService.generarExcelTrabajadores();
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteTrabajadores.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
+                .body(excelBytes);
+    }
+
+
+    @PostMapping("/servicios")
+    public ResponseEntity<String> enviarReporteServicios(@RequestParam String correo) {
+        reportService.enviarReporteServicios(correo);
+        return ResponseEntity.ok("Reporte de servicios enviado al correo: " + correo);
+    }
+
+    @GetMapping("/servicios/download")
+    public ResponseEntity<byte[]> descargarReporteServicios() {
+        byte[] excelBytes = reportService.generarExcelServicios();
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteServicios.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
+                .body(excelBytes);
+    }
+
+    @PostMapping("/reservas")
+    public ResponseEntity<String> enviarReporteReservas(@RequestParam String correo) {
+        reportService.enviarReporteReservas(correo);
+        return ResponseEntity.ok("Reporte de reservas enviado al correo: " + correo);
+    }
+
+    @GetMapping("/reservas/download")
+    public ResponseEntity<byte[]> descargarReporteReservas() {
+        byte[] excelBytes = reportService.generarExcelReservas();
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=ReporteReservas.xlsx")
+                .header(HEADER_CONTENT_TYPE, EXCEL_CONTENT_TYPE)
+                .body(excelBytes);
+    }
+
+    // ====== NUEVOS ENDPOINTS DE PRUEBA PARA PDF DE PRUEBA ======
+    //texto plano vizualiser
+    @GetMapping("/boleta/demo")
+    public ResponseEntity<byte[]> descargarBoletaDemo() {
+        byte[] pdfBytes = PdfGenerator.generateSampleTicketPdf();
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=BoletaDemo.pdf")
+                .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
+                .body(pdfBytes);
+    }
+    // un poco mas de diseno
+    @GetMapping("/boleta/custom")
+    public ResponseEntity<byte[]> descargarBoletaDinamica(
+            @RequestParam String cliente,
+            @RequestParam String descripcion,
+            @RequestParam double total,
+            @RequestParam String metodoPago,
+            @RequestParam(defaultValue = "000123") String factura
+    ) {
+        byte[] pdfBytes = PdfGenerator.generateStyledInvoicePdf(
+                cliente, factura, descripcion, 1, total, metodoPago, "ORD12345"
+        );
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=BoletaPersonalizada.pdf")
+                .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
+                .body(pdfBytes);
+    }
+    //con datos test estaticos pero se puede cambiar los datos estticos al jso nq entrega el front
+    @GetMapping("/boleta/test")
+    public ResponseEntity<byte[]> descargarBoletaTest() {
+        byte[] pdfBytes = PdfGenerator.generateInvoicePdf("Juan Pérez", "INV-TEST-001", 200.50);
+
+        return ResponseEntity.ok()
+                .header(HEADER_CONTENT_DISPOSITION, "attachment; filename=BoletaTest.pdf")
+                .header(HEADER_CONTENT_TYPE, PDF_CONTENT_TYPE)
+                .body(pdfBytes);
+    }
+
+        //metood derek nuevo
+
+
+
+    
+    //metodo yherson
+
+    // FACTURA: DESCARGA (GET)
+@GetMapping("/factura/download")
+public ResponseEntity<byte[]> descargarFactura(
+        @RequestParam String cliente,
+        @RequestParam String descripcion,
+        @RequestParam double total,
+        @RequestParam String metodoPago,
+        @RequestParam(defaultValue = "F000-000001") String numero
+) {
+    byte[] pdfBytes = PdfGenerator.generateInvoiceA4Pdf(
+            cliente, numero, descripcion, 1, total, metodoPago, "ORD-" + System.currentTimeMillis()
+    );
+
+    return buildAttachment(pdfBytes, "Factura-" + numero + ".pdf", PDF_CONTENT_TYPE);
+}
+
+//FACTURA: ENVÍO POR EMAIL (POST JSON) 
+@PostMapping("/factura/email")
+public ResponseEntity<String> enviarFacturaEmail(@RequestBody FacturaEmailRequest req) {
+
+    // Si hay ítems → MULTI-ITEM
+    if (req.getItems() != null && !req.getItems().isEmpty()) {
+        reportService.enviarFacturaPdfMultiple(
+                req.getCorreo(),
+                req.getCliente(),
+                req.getMetodoPago(),
+                req.getNumeroPedido(),
+                req.getNumeroFactura(),
+                req.getItems()
+        );
+    } else {
+        // Modo simple (1 item)
+        reportService.enviarFacturaPdf(
+                req.getCorreo(),
+                req.getCliente(),
+                req.getDescripcion(),
+                req.getTotal(),
+                req.getMetodoPago(),
+                req.getCantidad(),
+                req.getNumeroPedido()
+        );
+    }
+
+    return ResponseEntity.accepted().body("Factura enviada a: " + req.getCorreo());
+}
+
+    // DTO para el body del POST
+    public static class FacturaEmailRequest {
+        private String correo;
+        private String cliente;
+
+        // MODO SIMPLE (1 item)
+        private String descripcion;
+        private Double total;
+        private Integer cantidad;
+
+        private String metodoPago;
+        private String numeroPedido;
+        private String numeroFactura;
+
+        // MODO MULTI ITEMS
+        private List<ItemFacturaDTO> items;
+
+        public String getCorreo() { return correo; }
+        public void setCorreo(String correo) { this.correo = correo; }
+
+        public String getCliente() { return cliente; }
+        public void setCliente(String cliente) { this.cliente = cliente; }
+
+        public String getDescripcion() { return descripcion; }
+        public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+        public Double getTotal() { return total; }
+        public void setTotal(Double total) { this.total = total; }
+
+        public Integer getCantidad() { return cantidad; }
+        public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
+
+        public String getMetodoPago() { return metodoPago; }
+        public void setMetodoPago(String metodoPago) { this.metodoPago = metodoPago; }
+
+        public String getNumeroPedido() { return numeroPedido; }
+        public void setNumeroPedido(String numeroPedido) { this.numeroPedido = numeroPedido; }
+
+        public String getNumeroFactura() { return numeroFactura; }
+        public void setNumeroFactura(String numeroFactura) { this.numeroFactura = numeroFactura; }
+
+        public List<ItemFacturaDTO> getItems() { return items; }
+        public void setItems(List<ItemFacturaDTO> items) { this.items = items; }
+    }
+
+        //----------------DTO para cada item de la factura----------------//
+        public static class ItemFacturaDTO {
+        private String descripcion;
+        private Integer cantidad;
+        private Double precioUnitario;
+
+        public String getDescripcion() { return descripcion; }
+        public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+        public Integer getCantidad() { return cantidad; }
+        public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
+
+        public Double getPrecioUnitario() { return precioUnitario; }
+        public void setPrecioUnitario(Double precioUnitario) { this.precioUnitario = precioUnitario; }
+    }
+
+
+
+
+
+}

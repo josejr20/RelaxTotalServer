@@ -1,0 +1,55 @@
+package com.andreutp.centromasajes.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+@Entity
+@Table(name = "promotions")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class PromotionModel {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false)
+  private String name;
+
+  @Column(columnDefinition = "TEXT")
+  private String description;
+
+  @Column(name = "image_url")
+  private String imageUrl;
+
+  @Column(name = "discount_percent", precision = 5, scale = 2)
+  @Builder.Default
+  private BigDecimal discountPercent = BigDecimal.ZERO;
+
+  @Column(name = "discount_amount", precision = 10, scale = 2)
+  @Builder.Default
+  private BigDecimal discountAmount = BigDecimal.ZERO;
+
+  @Column(name = "start_date", nullable = false)
+  private LocalDate startDate;
+
+  @Column(name = "end_date", nullable = false)
+  private LocalDate endDate;
+
+  @Column(nullable = false)
+  @Builder.Default
+  private Boolean active = true;
+
+  @Column(name = "created_at", nullable = false)
+  @Builder.Default
+  private LocalDateTime createdAt = LocalDateTime.now();
+
+}
