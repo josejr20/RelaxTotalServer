@@ -1,37 +1,55 @@
-name: SonarQube
+name: CI Backend RelaxTotal
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main, develop ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [ main ]
+
 jobs:
+
   build:
-    name: Build and analyze
+    name: Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Centro-de-masajes-Relax-Relax-main/backend/centromasajes
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 17
+          fetch-depth: 0
+
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
-      - name: Cache SonarQube packages
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Cache Sonar packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      - name: Build and analyze
-      
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      - name: Build, Test and Analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=josejr20_RelaxTotalServer
+        run: >
+          ./mvnw -B clean verify
+          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.projectKey=josejr20_RelaxTotalServer
+          -Dsonar.organization=josejr20
+          -Dsonar.login=${SONAR_TOKEN}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: centromasajes-build
+          path: Centro-de-masajes-Relax-Relax-main/backend/centromasajes/target/*.jar
