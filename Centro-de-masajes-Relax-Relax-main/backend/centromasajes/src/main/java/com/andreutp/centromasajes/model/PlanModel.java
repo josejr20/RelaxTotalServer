@@ -16,40 +16,40 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PlanModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+  @Column(nullable = false, unique = true)
+  private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+  @Column(columnDefinition = "TEXT")
+  private String description;
 
-    @Column(nullable = false)
-    private Double price;
+  @Column(nullable = false)
+  private Double price;
 
-    @Column(name = "duration_days")
-    private Integer durationDays;
+  @Column(name = "duration_days")
+  private Integer durationDays;
 
-    private String tipo;
-    private String icono;
+  private String tipo;
+  private String icono;
 
-    @Column(columnDefinition = "LONGTEXT")
-    @Convert(converter = JsonListConverter.class)
-    private List<String> servicios_incluidos;
+  @Column(columnDefinition = "LONGTEXT")
+  @Convert(converter = JsonListConverter.class)
+  private List<String> servicios_incluidos;
 
-    @Column(columnDefinition = "LONGTEXT")
-    @Convert(converter = JsonListConverter.class)
-    private List<String> beneficios;
+  @Column(columnDefinition = "LONGTEXT")
+  @Convert(converter = JsonListConverter.class)
+  private List<String> beneficios;
 
-    private Boolean destacado;
-    private String estado;
+  private Boolean destacado;
+  private String estado;
 
-    private Integer duracion;
-    private String duracion_unidad;
+  private Integer duracion;
+  private String duracion_unidad;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+  @Column(name = "created_at", nullable = false)
+  @Builder.Default
+  private LocalDateTime createdAt = LocalDateTime.now();
 }

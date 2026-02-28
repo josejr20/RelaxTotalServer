@@ -1,202 +1,223 @@
 package com.andreutp.centromasajes.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Represents a user in the system. Depending on their role the user may
+ * act as a client, a worker providing services or an administrator.
+ */
 @Entity
 @Table(name = "users")
-
 public class UserModel {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @NotBlank(message = "El nombre de usuario es obligatorio")
-    @Size(min = 3, max = 30, message = "El nombre de usuario debe tener entre 3 y 30 caracteres")
-    private String username;
+  @NotBlank(message = "El nombre de usuario es obligatorio")
+  @Size(min = 3, max = 30, message = "El nombre de usuario debe tener entre 3 y 30 caracteres")
+  private String username;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
-    private String password;
+  @NotBlank(message = "La contraseña es obligatoria")
+  @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+  private String password;
 
-    @NotBlank(message = "El número de teléfono es obligatorio")
-    @Pattern(regexp = "^[0-9]{9}$", message = "El teléfono debe tener 9 dígitos")
-    private String phone;
+  @NotBlank(message = "El número de teléfono es obligatorio")
+  @Pattern(regexp = "^[0-9]{9}$", message = "El teléfono debe tener 9 dígitos")
+  private String phone;
 
-    @NotBlank(message = "El correo electrónico es obligatorio")
-    @Email(message = "El correo electrónico no es válido")
-    private String email;
+  @NotBlank(message = "El correo electrónico es obligatorio")
+  @Email(message = "El correo electrónico no es válido")
+  private String email;
 
-    private Boolean enabled;
+  private Boolean enabled;
 
-    @NotBlank(message = "El DNI es obligatorio")
-    @Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe tener 8 dígitos")
-    @Column(unique = true, length = 20)
-    private String dni;
+  @NotBlank(message = "El DNI es obligatorio")
+  @Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe tener 8 dígitos")
+  @Column(unique = true, length = 20)
+  private String dni;
 
+  @ManyToOne
+  @JoinColumn(name = "role_id", referencedColumnName = "id")
+  private RoleModel role;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "id")
-    private RoleModel role;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  @CreationTimestamp
+  private LocalDateTime createdAt;
 
+  @Column(name = "updated_at")
+  @UpdateTimestamp
+  private LocalDateTime updatedAt;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+  @OneToMany(mappedBy = "worker", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnoreProperties({"worker"})
+  private List<WorkerAvailabilityModel> availability;
 
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+  private String especialidad; // Masaje Relajante, Deportivo, etc.
+  private String estado; // Activo, Vacaciones, Inactivo
+  private Integer experiencia; // Años de experiencia
 
-    @OneToMany(mappedBy = "worker", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties({"worker"})
-    private List<WorkerAvailabilityModel> availability;
+  public UserModel() {}
 
-    private String especialidad;    // Masaje Relajante, Deportivo, etc.
-    private String estado;          // Activo, Vacaciones, Inactivo
-    private Integer experiencia;    // Años de experiencia
+  public UserModel(Long id,
+                   String username,
+                   String password,
+                   String phone,
+                   String email,
+                   Boolean enabled,
+                   String dni,
+                   RoleModel role,
+                   LocalDateTime createdAt,
+                   LocalDateTime updatedAt,
+                   List<WorkerAvailabilityModel> availability,
+                   String especialidad,
+                   String estado,
+                   Integer experiencia) {
+    this.id = id;
+    this.username = username;
+    this.password = password;
+    this.phone = phone;
+    this.email = email;
+    this.enabled = enabled;
+    this.dni = dni;
+    this.role = role;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.availability = availability;
+    this.especialidad = especialidad;
+    this.estado = estado;
+    this.experiencia = experiencia;
+  }
 
+  public Long getId() {
+    return id;
+  }
 
-    public UserModel() {}
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public UserModel(Long id, String username, String password, String phone, String email, Boolean enabled, String dni,
-                     RoleModel role, LocalDateTime createdAt,
-                     LocalDateTime updatedAt, List<WorkerAvailabilityModel> availability,
-                     String especialidad, String estado, Integer experiencia) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.phone = phone;
-        this.email = email;
-        this.enabled = enabled;
-        this.dni = dni;
-        this.role = role;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.availability = availability;
-        this.especialidad = especialidad;
-        this.estado = estado;
-        this.experiencia = experiencia;
-    }
+  public String getUsername() {
+    return username;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public String getUsername() {
-        return username;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public String getPhone() {
+    return phone;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public void setPhone(String phone) {
+    this.phone = phone;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public String getPhone() {
-        return phone;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+  public Boolean getEnabled() {
+    return enabled;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public void setEnabled(Boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public String getDni() {
+    return dni;
+  }
 
-    public Boolean getEnabled() {
-        return enabled;
-    }
+  public void setDni(String dni) {
+    this.dni = dni;
+  }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
+  public RoleModel getRole() {
+    return role;
+  }
 
-    public RoleModel getRole() {
-        return role;
-    }
+  public void setRole(RoleModel role) {
+    this.role = role;
+  }
 
-    public void setRole(RoleModel role) {
-        this.role = role;
-    }
+  public LocalDateTime getCreatedAt() {
+    return createdAt;
+  }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+  public void setCreatedAt(LocalDateTime createdAt) {
+    this.createdAt = createdAt;
+  }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+  public LocalDateTime getUpdatedAt() {
+    return updatedAt;
+  }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+  public void setUpdatedAt(LocalDateTime updatedAt) {
+    this.updatedAt = updatedAt;
+  }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+  public List<WorkerAvailabilityModel> getAvailability() {
+    return availability;
+  }
 
-    public String getDni() {
-        return dni;
-    }
+  public void setAvailability(List<WorkerAvailabilityModel> availability) {
+    this.availability = availability;
+  }
 
-    public void setDni(String dni) {
-        this.dni = dni;
-    }
+  public String getEspecialidad() {
+    return especialidad;
+  }
 
-    public List<WorkerAvailabilityModel> getAvailability() {
-        return availability;
-    }
+  public void setEspecialidad(String especialidad) {
+    this.especialidad = especialidad;
+  }
 
-    public void setAvailability(List<WorkerAvailabilityModel> availability) {
-        this.availability = availability;
-    }
+  public String getEstado() {
+    return estado;
+  }
 
-    public String getEspecialidad() {
-        return especialidad;
-    }
+  public void setEstado(String estado) {
+    this.estado = estado;
+  }
 
-    public void setEspecialidad(String especialidad) {
-        this.especialidad = especialidad;
-    }
+  public Integer getExperiencia() {
+    return experiencia;
+  }
 
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public Integer getExperiencia() {
-        return experiencia;
-    }
-
-    public void setExperiencia(Integer experiencia) {
-        this.experiencia = experiencia;
-    }
+  public void setExperiencia(Integer experiencia) {
+    this.experiencia = experiencia;
+  }
 }
