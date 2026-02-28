@@ -29,10 +29,12 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Clear Sonar cache
+      - name: Clear Sonar and Maven cache
         run: |
           echo "Clearing Sonar cache to avoid corrupted plugin downloads"
           rm -rf $HOME/.sonar/cache || true
+          echo "Also clearing Sonar plugin artifacts from Maven repository"
+          rm -rf $HOME/.m2/repository/org/sonarsource || true
 
       - name: Compile project
         run: ./mvnw clean compile
