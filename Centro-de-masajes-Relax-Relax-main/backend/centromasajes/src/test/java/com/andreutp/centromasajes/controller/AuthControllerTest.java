@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
     @Autowired
@@ -112,5 +112,51 @@ class AuthControllerTest {
 
         verify(loginRateLimiter, times(1)).tryAcquire(anyString(), anyDouble());
         verify(authService, times(1)).login(any(LoginRequest.class));
+    }
+
+    @Test
+    @WithMockUser
+    void testLogin_RateLimited() throws Exception {
+        when(loginRateLimiter.tryAcquire(anyString(), anyDouble())).thenReturn(false);
+
+        mockMvc.perform(post("/auth/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andDo(print())
+                .andExpect(status().isBadRequest()); // rate limiter triggers bad request response
+
+        verify(loginRateLimiter, times(1)).tryAcquire(anyString(), anyDouble());
+        verify(authService, never()).login(any(LoginRequest.class));
+    }
+
+    @Test
+    @WithMockUser
+    void testForgotPassword() throws Exception {
+        doNothing().when(authService).sendPasswordResetToken(anyString());
+
+        mockMvc.perform(post("/auth/forgot-password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"foo@bar.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Se envió un enlace de recuperación al correo"));
+
+        verify(authService, times(1)).sendPasswordResetToken("foo@bar.com");
+    }
+
+    @Test
+    @WithMockUser
+    void testResetPassword() throws Exception {
+        doNothing().when(authService).resetPassword(anyString(), anyString());
+
+        mockMvc.perform(post("/auth/reset-password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"abc123\",\"newPassword\":\"newpass\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Contraseña actualizada con éxito"));
+
+        verify(authService, times(1)).resetPassword("abc123", "newpass");
     }
 }
