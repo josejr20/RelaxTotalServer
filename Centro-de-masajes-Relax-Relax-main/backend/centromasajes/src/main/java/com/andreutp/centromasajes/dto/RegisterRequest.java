@@ -14,7 +14,7 @@ public class RegisterRequest {
     @Size(min = 6, message = "La contraseña debe tener al menos 8 caracteres")
     private String password;
 
-    @Pattern(regexp = "^[0-9]{9}$", message = "El teléfono debe tener 9 dígitos")
+    @Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener 9 dígitos")
     private String phone;
 
     @NotBlank(message = "El correo es obligatorio")
@@ -22,6 +22,6 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "El DNI es obligatorio")
-    @Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe tener exactamente 8 dígitos")
+    @Pattern(regexp = "^\\d{8}$", message = "El DNI debe tener exactamente 8 dígitos")
     private String dni;
 }

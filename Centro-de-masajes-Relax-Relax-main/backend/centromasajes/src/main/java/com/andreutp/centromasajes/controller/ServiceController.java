@@ -3,7 +3,6 @@ package com.andreutp.centromasajes.controller;
 import com.andreutp.centromasajes.model.ServiceModel;
 import com.andreutp.centromasajes.service.ServiceService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

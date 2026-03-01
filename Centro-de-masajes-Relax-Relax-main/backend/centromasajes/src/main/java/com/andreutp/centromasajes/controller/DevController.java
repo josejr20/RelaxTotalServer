@@ -3,7 +3,6 @@ package com.andreutp.centromasajes.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +26,11 @@ import com.andreutp.centromasajes.utils.PdfGenerator;
 @RequestMapping("/dev")
 public class DevController {
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
+
+    public DevController(EmailService emailService) {
+        this.emailService = emailService;
+    }
 
     /**
      * Envío de boleta de prueba. Sólo disponible en perfil <code>dev</code>.
