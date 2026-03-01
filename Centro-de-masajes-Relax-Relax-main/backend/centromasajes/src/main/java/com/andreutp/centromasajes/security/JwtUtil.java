@@ -8,6 +8,8 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.andreutp.centromasajes.model.UserModel;
@@ -29,20 +31,12 @@ public class JwtUtil {
 
     private final Key key;
 
-    public JwtUtil(@org.springframework.beans.factory.annotation.Value("${jwt.secret}") String secretKey) {
+    @Autowired
+    public JwtUtil(@Value("${jwt.secret}") String secretKey) {
         if (secretKey == null || secretKey.isBlank()) {
             throw new IllegalArgumentException("JWT secret cannot be empty");
         }
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
-    }
-
-    // Constructor sin argumentos para facilitar pruebas unitarias que instancien
-    // la clase directamente. Usa una clave por defecto de 32 bytes válida
-    // para HS256. No debe usarse en producción; Spring inyecta la propiedad.
-    public JwtUtil() {
-        // Default secret for testing only - use properly configured jwt.secret in production via application.properties
-        String testSecret = "01234567890123456789012345678901"; // 32 chars
-        this.key = Keys.hmacShaKeyFor(testSecret.getBytes());
     }
 
     // Genera el token incluyendo userId y role

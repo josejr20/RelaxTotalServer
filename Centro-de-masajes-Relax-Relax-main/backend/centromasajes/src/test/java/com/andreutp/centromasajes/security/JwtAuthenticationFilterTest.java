@@ -8,24 +8,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.andreutp.centromasajes.dao.IUserRepository;
 import com.andreutp.centromasajes.model.RoleModel;
 import com.andreutp.centromasajes.model.UserModel;
 
+@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
 
     @Mock
     private IUserRepository userRepository;
 
+    @Autowired
     private JwtUtil jwtUtil;
     private UserModel testUser;
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil();
-        
         RoleModel role = new RoleModel();
         role.setId(1L);
         role.setName("USER");

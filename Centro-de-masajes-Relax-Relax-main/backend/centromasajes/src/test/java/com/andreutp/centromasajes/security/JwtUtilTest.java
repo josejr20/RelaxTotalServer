@@ -9,9 +9,8 @@ import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.andreutp.centromasajes.model.RoleModel;
 import com.andreutp.centromasajes.model.UserModel;
@@ -20,18 +19,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class JwtUtilTest {
 
+    @Autowired
     private JwtUtil jwtUtil;
 
     private UserModel testUser;
-
-    @org.junit.jupiter.api.BeforeEach
-    void initUtil() {
-        // provide a fixed secret for deterministic testing
-        jwtUtil = new JwtUtil("testsecrettestsecrettestsecret12");
-    }
 
     @BeforeEach
     void setUp() {
