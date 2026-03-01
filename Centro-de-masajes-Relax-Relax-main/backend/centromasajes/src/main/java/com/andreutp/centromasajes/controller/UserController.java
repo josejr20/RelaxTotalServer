@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.andreutp.centromasajes.dao.IAppointmentRepository;
 import com.andreutp.centromasajes.dao.IRoleRepository;
 import com.andreutp.centromasajes.dao.IUserRepository;
-import com.andreutp.centromasajes.dao.IWorkerAvailabilityRepository;
 import com.andreutp.centromasajes.dto.UserClientDTO;
 import com.andreutp.centromasajes.dto.UserWorkerDTO;
 import com.andreutp.centromasajes.model.AppointmentModel;
@@ -41,18 +40,15 @@ public class UserController {
 
     private final UserService userService;
     private final IRoleRepository roleRepository;
-    private final IWorkerAvailabilityRepository availabilityRepository;
     private final IUserRepository userRepository;
     private final IAppointmentRepository appointmentRepository;
 
     public UserController(UserService userService,
                           IRoleRepository roleRepository,
-                          IWorkerAvailabilityRepository availabilityRepository,
                           IUserRepository userRepository,
                           IAppointmentRepository appointmentRepository) {
         this.userService = userService;
         this.roleRepository = roleRepository;
-        this.availabilityRepository = availabilityRepository;
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
     }

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.andreutp.centromasajes.model.UserModel;
@@ -19,7 +21,7 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private final String secretKey;
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     // Nota: al multiplicar literales enteros el resultado también es int,
     // por eso forzamos uno de los operandos a long para evitar warnings y
     // posibles overflows.
@@ -31,7 +33,6 @@ public class JwtUtil {
         if (secretKey == null || secretKey.isBlank()) {
             throw new IllegalArgumentException("JWT secret cannot be empty");
         }
-        this.secretKey = secretKey;
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
@@ -39,9 +40,9 @@ public class JwtUtil {
     // la clase directamente. Usa una clave por defecto de 32 bytes válida
     // para HS256. No debe usarse en producción; Spring inyecta la propiedad.
     public JwtUtil() {
-        String defaultSecret = "01234567890123456789012345678901"; // 32 chars
-        this.secretKey = defaultSecret;
-        this.key = Keys.hmacShaKeyFor(defaultSecret.getBytes());
+        // Default secret for testing only - use properly configured jwt.secret in production via application.properties
+        String testSecret = "01234567890123456789012345678901"; // 32 chars
+        this.key = Keys.hmacShaKeyFor(testSecret.getBytes());
     }
 
     // Genera el token incluyendo userId y role
@@ -101,7 +102,7 @@ public class JwtUtil {
             // Verifica que el username exista y que el token no haya expirado
             return (username != null && !isTokenExpired(token));
         } catch (JwtException e) {
-            System.err.println("JWT validation error: " + e.getMessage());
+            logger.error("JWT validation error: {}", e.getMessage());
             return false;
         }
     }
