@@ -10,7 +10,6 @@ import java.util.List;
 @Service
 public class ServiceService {
 
-    @Autowired
     private final IServiceRepository iServiceRepository;
 
     public ServiceService(IServiceRepository iServiceRepository) {
@@ -34,7 +33,7 @@ public class ServiceService {
     //buscar por id
     public ServiceModel getServiceById(Long id){
         return iServiceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("no se encontro el servicio"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("no se encontro el servicio"));
     }
 
     //ACTUALIZAR

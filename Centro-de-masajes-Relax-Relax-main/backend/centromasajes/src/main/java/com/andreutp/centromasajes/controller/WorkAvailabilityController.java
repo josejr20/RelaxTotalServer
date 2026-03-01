@@ -12,11 +12,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/availability")
 public class WorkAvailabilityController {
-    @Autowired
-    private IWorkerAvailabilityRepository availabilityRepository;
+    private final IWorkerAvailabilityRepository availabilityRepository;
+    private final IUserRepository userRepository;
 
-    @Autowired
-    private IUserRepository userRepository;
+    public WorkAvailabilityController(IWorkerAvailabilityRepository availabilityRepository,
+                                      IUserRepository userRepository) {
+        this.availabilityRepository = availabilityRepository;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/{workerId}")
     public List<WorkerAvailabilityModel> getByWorker(@PathVariable Long workerId) {
@@ -26,7 +29,7 @@ public class WorkAvailabilityController {
     @PostMapping("/{workerId}")
     public WorkerAvailabilityModel addAvailability(@PathVariable Long workerId, @RequestBody WorkerAvailabilityModel availability) {
         var worker = userRepository.findById(workerId)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Trabajador no encontrado"));
         availability.setWorker(worker);
         return availabilityRepository.save(availability);
     }

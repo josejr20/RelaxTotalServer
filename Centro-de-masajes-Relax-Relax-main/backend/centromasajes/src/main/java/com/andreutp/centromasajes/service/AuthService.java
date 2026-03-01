@@ -32,11 +32,15 @@ public class AuthService {
     public AuthService(IUserRepository iuserRepository,
                        IRoleRepository iroleRepository,
                        BCryptPasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       TokenService tokenService,
+                       JavaMailSender mailSender) {
         this.iuserRepository = iuserRepository;
         this.iroleRepository = iroleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.tokenService = tokenService;
+        this.mailSender = mailSender;
     }
 
     //registrar un usuario normal q siempre sera user primero
@@ -45,7 +49,7 @@ public class AuthService {
         RoleModel userRole = iroleRepository.findByName("USER");
         //si no es usuario da error
         if (userRole==null){
-            throw new RuntimeException("EL ROL USER NO SE HA ENCONTARDO EN AL BD");
+            throw new com.andreutp.centromasajes.exception.BusinessException("EL ROL USER NO SE HA ENCONTARDO EN AL BD");
         }
         //creamos el usuario y obtenemos los datos de la request
         UserModel user = new UserModel();
@@ -83,7 +87,7 @@ public class AuthService {
                 .filter(u -> u.getEmail().equals(request.getEmail())).findFirst();
         //verificar si el user esta vacio o es incorrecto junto a la contrasena cifrada
         if (userOpt.isEmpty()|| !passwordEncoder.matches(request.getPassword(), userOpt.get().getPassword())){
-            throw new RuntimeException("Email o contrasena incorrectos :0");
+            throw new com.andreutp.centromasajes.exception.BusinessException("Email o contrasena incorrectos :0");
         }
 
         //obtenemos e usuario
@@ -106,16 +110,14 @@ public class AuthService {
 
     //EMPEZAMOS CON GOOGLE GUAVA XD que necesitaremos aqui es el iuserrepository el tokenservice que se creo ahi
     // el JavaMailSender y pues eel password encoderq esta en la parte superios junto a el iuserreposiroty
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
+    private final JavaMailSender mailSender;
 
-    @Autowired
-    private JavaMailSender mailSender;
 
     // Enviar token
     public void sendPasswordResetToken(String email) {
         Optional<UserModel> userOpt = iuserRepository.findByEmail(email);
-        if (userOpt.isEmpty()) throw new RuntimeException("Usuario no encontrado");
+        if (userOpt.isEmpty()) throw new com.andreutp.centromasajes.exception.BusinessException("Usuario no encontrado");
 
         String token = UUID.randomUUID().toString();
         tokenService.storeToken(token, email);
@@ -133,10 +135,10 @@ public class AuthService {
     // Resetear contraseña
     public void resetPassword(String token, String newPassword) {
         String email = tokenService.validateToken(token);
-        if (email == null) throw new RuntimeException("Token inválido o expirado");
+        if (email == null) throw new com.andreutp.centromasajes.exception.BusinessException("Token inválido o expirado");
 
         UserModel user = iuserRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Usuario no encontrado"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         iuserRepository.save(user);

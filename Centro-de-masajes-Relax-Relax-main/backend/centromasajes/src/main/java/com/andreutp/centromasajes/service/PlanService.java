@@ -9,7 +9,6 @@ import java.util.List;
 
 @Service
 public class PlanService {
-    @Autowired
     private final IPlanRepository planRepository;
 
     public PlanService(IPlanRepository planRepository) {
@@ -22,13 +21,13 @@ public class PlanService {
 
     public PlanModel getPlanById(Long id) {
         return planRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plan no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Plan no encontrado"));
     }
 
     public PlanModel savePlan(PlanModel plan) {
         // Validación: no duplicar nombre
         if (planRepository.findByName(plan.getName()).isPresent()) {
-            throw new RuntimeException("Ya existe un plan con ese nombre");
+            throw new com.andreutp.centromasajes.exception.BusinessException("Ya existe un plan con ese nombre");
         }
         plan.setCreatedAt(java.time.LocalDateTime.now());
         return planRepository.save(plan);

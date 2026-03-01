@@ -30,8 +30,11 @@ public class ReportController {
     private static final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String PDF_CONTENT_TYPE = "application/pdf";
 
-    @Autowired
-    private ReportService reportService;
+    private final ReportService reportService;
+
+    public ReportController(ReportService reportService) {
+        this.reportService = reportService;
+    }
 
     // helper para construir respuestas de descarga con el mimetype y nombre
     private ResponseEntity<byte[]> buildAttachment(byte[] data, String filename, String contentType) {

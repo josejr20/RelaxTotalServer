@@ -41,16 +41,23 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private IRoleRepository roleRepository;
-    @Autowired
-    private IWorkerAvailabilityRepository availabilityRepository;
-    @Autowired
-    private IUserRepository userRepository;
-    @Autowired
-    private IAppointmentRepository appointmentRepository;
+    private final UserService userService;
+    private final IRoleRepository roleRepository;
+    private final IWorkerAvailabilityRepository availabilityRepository;
+    private final IUserRepository userRepository;
+    private final IAppointmentRepository appointmentRepository;
+
+    public UserController(UserService userService,
+                          IRoleRepository roleRepository,
+                          IWorkerAvailabilityRepository availabilityRepository,
+                          IUserRepository userRepository,
+                          IAppointmentRepository appointmentRepository) {
+        this.userService = userService;
+        this.roleRepository = roleRepository;
+        this.availabilityRepository = availabilityRepository;
+        this.userRepository = userRepository;
+        this.appointmentRepository = appointmentRepository;
+    }
 
     @GetMapping("/all") // GET /user/all
     public List<UserModel> getUsers(){

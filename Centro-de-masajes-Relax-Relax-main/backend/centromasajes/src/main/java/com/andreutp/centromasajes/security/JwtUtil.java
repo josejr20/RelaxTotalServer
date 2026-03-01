@@ -19,14 +19,21 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "laClaveSuperSecretaParaJWT_123456789xd";
+    private final String secretKey;
     // Nota: al multiplicar literales enteros el resultado también es int,
     // por eso forzamos uno de los operandos a long para evitar warnings y
     // posibles overflows.
     private static final long EXPIRATION_TIME = 1000L * 60 * 60; // 1 hora
 
+    private final Key key;
 
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    public JwtUtil(@org.springframework.beans.factory.annotation.Value("${jwt.secret}") String secretKey) {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalArgumentException("JWT secret cannot be empty");
+        }
+        this.secretKey = secretKey;
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
 
     // Genera el token incluyendo userId y role
     public String generateToken(UserModel user) {

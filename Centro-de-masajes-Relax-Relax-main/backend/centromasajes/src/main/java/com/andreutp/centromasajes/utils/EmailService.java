@@ -42,7 +42,7 @@ public class EmailService {
 
         } catch (Exception e) {
             logger.error("Error enviando correo con PDF", e);
-            throw new RuntimeException("Error enviando correo: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error enviando correo: " + e.getMessage(), e);
         }
     }
     public void enviarCorreoConAdjunto(String correo, String asunto, String mensaje, byte[] archivoBytes, String nombreArchivo) {
@@ -64,7 +64,7 @@ public class EmailService {
 
         } catch (Exception e) {
             logger.error("Error enviando correo con adjunto", e);
-            throw new RuntimeException("Error enviando correo con adjunto: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error enviando correo con adjunto: " + e.getMessage(), e);
         }
     }
 
@@ -83,7 +83,7 @@ public class EmailService {
 
         } catch (Exception e) {
             logger.error("Error enviando correo simple", e);
-            throw new RuntimeException("Error enviando correo: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error enviando correo: " + e.getMessage(), e);
         }
     }
 //--------------Nuevo-----------------------
@@ -121,7 +121,7 @@ public class EmailService {
 
     } catch (Exception e) {
         logger.error("Error enviando factura A4", e);
-        throw new RuntimeException("Error enviando factura: " + e.getMessage(), e);
+        throw new com.andreutp.centromasajes.exception.BusinessException("Error enviando factura: " + e.getMessage(), e);
     }
 }
 

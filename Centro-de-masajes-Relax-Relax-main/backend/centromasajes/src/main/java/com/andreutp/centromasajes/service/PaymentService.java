@@ -25,7 +25,6 @@ public class PaymentService {
     private final IPaymentRepository paymentRepository;
     private final IUserRepository userRepository;
     private final IInvoiceRepository invoiceRepository;
-    @Autowired
     private final IAppointmentRepository appointmentRepository;
     private final EmailService emailService;
     private static final Logger logger = LoggerFactory.getLogger(PdfGenerator.class);
@@ -40,32 +39,7 @@ public class PaymentService {
         this.appointmentRepository = appointmentRepository;
         this.emailService = emailService;
     }
-    /*
-        // Crear pago con factura o boleta existente
-        public PaymentModel createPayment(PaymentRequest request) {
-            UserModel user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            AppointmentModel appointment = appointmentRepository.findById(request.getAppointmentId())
-                    .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
-
-            InvoiceModel invoice = invoiceRepository.findById(request.getInvoiceId())
-                    .orElseThrow(() -> new RuntimeException("Factura no encontrada"));
-
-
-            PaymentModel payment = new PaymentModel();
-            payment.setUser(user);
-            payment.setAppointment(appointment);
-            payment.setInvoice(invoice);
-            payment.setAmount(request.getAmount());
-            payment.setPaymentDate(request.getPaymentDate());
-            payment.setMethod(request.getMethod());
-            payment.setStatus(PaymentModel.Status.COMPLETED);
-            payment.setCoveredBySubscription(request.isCoveredBySubscription());
-
-            return paymentRepository.save(payment);
-        }
-    */
     public List<PaymentModel> getAllPayments() {
         return paymentRepository.findAll();
     }
@@ -73,10 +47,10 @@ public class PaymentService {
         public PaymentModel createPayment(PaymentRequest request) {
         // 1. buscar user y appointment
         UserModel user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Usuario no encontrado"));
 
         AppointmentModel appointment = appointmentRepository.findById(request.getAppointmentId())
-                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Cita no encontrada"));
 
         // 2. preparar payment
         LocalDateTime payDate = request.getPaymentDate() != null ? request.getPaymentDate() : LocalDateTime.now();
@@ -174,9 +148,8 @@ public class PaymentService {
                     tipoTextoCap + "_" + invoice.getInvoiceNumber() + ".pdf"
             );
         } catch (Exception e) {
-            logger.error("Error enviando " +
-                            (tipoComprobante == InvoiceModel.Type.FACTURA ? "factura" : "boleta") +
-                            " por correo: {}", e.getMessage(), e);
+            String tipo = (tipoComprobante == InvoiceModel.Type.FACTURA ? "factura" : "boleta");
+            logger.error("Error enviando {} por correo", tipo, e);
         }
 
         return savedPayment;
@@ -193,32 +166,10 @@ public class PaymentService {
 
 
 
-
-    /*// Crear pago (sin factura o boleta  ain)
-    public PaymentModel createPayment(PaymentRequest request) {
-        UserModel user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        AppointmentModel appointment = appointmentRepository.findById(request.getAppointmentId())
-                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
-
-        PaymentModel payment = new PaymentModel();
-        payment.setUser(user);
-        payment.setAppointment(appointment);
-        payment.setAmount(request.getAmount());
-        payment.setPaymentDate(request.getPaymentDate());
-        payment.setMethod(request.getMethod());
-        payment.setStatus(PaymentModel.Status.PENDING);
-        payment.setCoveredBySubscription(request.isCoveredBySubscription());
-
-        // Guardar pago primero, sin factura
-        return paymentRepository.save(payment);
-    }
-*/
     // Generar factura para un pago existente
     public InvoiceModel createInvoiceForPayment(Long paymentId, String type, String customerName, String customerDoc) {
         PaymentModel payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new RuntimeException("Pago no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Pago no encontrado"));
 
         InvoiceModel invoice = new InvoiceModel();
         invoice.setPayment(payment);
@@ -244,13 +195,13 @@ public class PaymentService {
 
     public List<PaymentModel> getPaymentsByUser(Long userId) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Usuario no encontrado"));
         return paymentRepository.findByUser(user);
     }
 
     public PaymentModel getPaymentById(Long id) {
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pago no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Pago no encontrado"));
     }
 
     public PaymentModel updatePayment(Long id, PaymentModel updatedPayment) {

@@ -13,8 +13,11 @@ import java.util.List;
 @RequestMapping("/services")
 public class ServiceController {
 
-    @Autowired
-    private ServiceService serviceService;
+    private final ServiceService serviceService;
+
+    public ServiceController(ServiceService serviceService) {
+        this.serviceService = serviceService;
+    }
     //(Solo adminstrador FALTA CONFIGURAR)
 
     //crear servicio

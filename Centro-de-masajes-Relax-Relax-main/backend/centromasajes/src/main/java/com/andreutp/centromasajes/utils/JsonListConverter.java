@@ -18,7 +18,7 @@ public class JsonListConverter implements AttributeConverter<List<String>, Strin
         try {
             return list == null ? "[]" : mapper.writeValueAsString(list);
         } catch (Exception e) {
-            throw new RuntimeException("Error converting list to JSON", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error converting list to JSON", e);
         }
     }
 
@@ -28,7 +28,7 @@ public class JsonListConverter implements AttributeConverter<List<String>, Strin
             return json == null ? List.of() :
                     mapper.readValue(json, new TypeReference<List<String>>() {});
         } catch (Exception e) {
-            throw new RuntimeException("Error converting JSON to list", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error converting JSON to list", e);
         }
     }
 }

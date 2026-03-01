@@ -79,7 +79,7 @@ public final class ExcelReportGenerator {
             return out.toByteArray();
         } catch (IOException e) {
             logger.error("Error writing workbook to bytes", e);
-            throw new RuntimeException("Error generando Excel: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel: " + e.getMessage(), e);
         }
     }
 
@@ -116,7 +116,7 @@ public final class ExcelReportGenerator {
             return toByteArray(workbook);
         } catch (Exception e) {
             logger.error("Error generando reporte de pagos", e);
-            throw new RuntimeException("Error generando Excel de pagos", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel de pagos", e);
         }
     }
 
@@ -165,7 +165,7 @@ public final class ExcelReportGenerator {
             return toByteArray(workbook);
         } catch (Exception e) {
             logger.error("Error generando reporte de clientes", e);
-            throw new RuntimeException("Error generando Excel de clientes", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel de clientes", e);
         }
     }
 
@@ -201,7 +201,7 @@ public final class ExcelReportGenerator {
             return toByteArray(workbook);
         } catch (Exception e) {
             logger.error("Error generando reporte de trabajadores", e);
-            throw new RuntimeException("Error generando Excel de trabajadores", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel de trabajadores", e);
         }
     }
 
@@ -231,7 +231,7 @@ public final class ExcelReportGenerator {
             return toByteArray(workbook);
         } catch (Exception e) {
             logger.error("Error generando reporte de servicios", e);
-            throw new RuntimeException("Error generando Excel de servicios", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel de servicios", e);
         }
     }
 
@@ -263,7 +263,7 @@ public final class ExcelReportGenerator {
             return toByteArray(workbook);
         } catch (Exception e) {
             logger.error("Error generando reporte de reservas", e);
-            throw new RuntimeException("Error generando Excel de reservas", e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel de reservas", e);
         }
     }
 

@@ -19,17 +19,33 @@ public class ImageController {
 
     @PostMapping("/promotion-image")
     public ResponseEntity<String> uploadPromotionImage(@RequestParam("image") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File must not be empty");
+        }
+
         try {
             File directory = new File(UPLOAD_DIR);
             if (!directory.exists()) directory.mkdirs();
 
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            String original = file.getOriginalFilename();
+            if (original == null || original.isBlank()) {
+                throw new IllegalArgumentException("Invalid file name");
+            }
 
-            Files.write(filePath, file.getBytes());
+            String fileName = System.currentTimeMillis() + "_" + Paths.get(original).getFileName().toString();
+            Path uploadPath = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
+            Path targetPath = uploadPath.resolve(fileName).normalize();
+
+            if (!targetPath.startsWith(uploadPath)) {
+                throw new IllegalArgumentException("Invalid file path");
+            }
+
+            Files.write(targetPath, file.getBytes());
 
             return ResponseEntity.ok("/uploads/promotions/" + fileName);
 
+        } catch (IllegalArgumentException iae) {
+            return ResponseEntity.badRequest().body(iae.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("ERROR SUBIENDO IMAGEN");
         }

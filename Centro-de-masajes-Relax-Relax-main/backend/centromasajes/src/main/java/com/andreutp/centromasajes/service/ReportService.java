@@ -24,20 +24,27 @@ import java.util.List;
 @Service
 public class ReportService {
     //REPORTES O SEA MANDAR AL CORREO LOS REPORTES HARE 1 nomas
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
+    private final IPaymentRepository ipaymentRepository;
+    private final IServiceRepository serviceRepository;
+    private final IUserRepository userRepository;
+    private final IAppointmentRepository appointmentRepository;
 
-    @Autowired
-    private IPaymentRepository ipaymentRepository;
-    @Autowired
-    private IServiceRepository serviceRepository;
-
-    @Autowired
-    private IUserRepository userRepository;
-    @Autowired
-    private IAppointmentRepository appointmentRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ReportService.class);
+
+    public ReportService(EmailService emailService,
+                         IPaymentRepository ipaymentRepository,
+                         IServiceRepository serviceRepository,
+                         IUserRepository userRepository,
+                         IAppointmentRepository appointmentRepository) {
+        this.emailService = emailService;
+        this.ipaymentRepository = ipaymentRepository;
+        this.serviceRepository = serviceRepository;
+        this.userRepository = userRepository;
+        this.appointmentRepository = appointmentRepository;
+    }
+
     //Reporte de Pagos
     public void enviarReportePagosUsuario(Long userId, String correo) {
         logger.info("Preparando reporte de pagos para usuario {}", userId);
@@ -45,7 +52,7 @@ public class ReportService {
         List<PaymentModel> pagos = ipaymentRepository.findAllByUserId(userId);
 
         if (pagos.isEmpty()) {
-            throw new RuntimeException("No hay pagos registrados para este usuario.");
+            throw new com.andreutp.centromasajes.exception.BusinessException("No hay pagos registrados para este usuario.");
         }
 
         // 2 Generar Excel

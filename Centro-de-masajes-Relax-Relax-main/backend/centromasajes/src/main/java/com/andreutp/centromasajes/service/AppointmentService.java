@@ -24,23 +24,16 @@ public class AppointmentService {
     public static final String USER_NOT_FOUND = "Usuario no encontrado";
     public static final String WORKER_NOT_FOUND = "Trabajador no encontrado";
     public static final String SERVICE_NOT_FOUND = "Servicio no encontrado";
-    @Autowired
     private final IAppointmentRepository appointmentRepository;
 
-    @Autowired
     private final IUserRepository userRepository;
 
-    @Autowired
     private final IServiceRepository serviceRepository;
 
-    @Autowired
     private final IPaymentRepository paymentRepository;
 
-    @Autowired
     private final IInvoiceRepository invoiceRepository;
 
-
-    @Autowired
     private final IPlanRepository planRepository;
 
     public AppointmentService(IAppointmentRepository appointmentRepository,
@@ -71,8 +64,7 @@ public class AppointmentService {
         AppointmentModel appointment = new AppointmentModel();
         // Validar disponibilidad antes de crear la cita
         if (appointmentRepository.existsByWorkerAndAppointmentStart(worker, request.getAppointmentStart())) {
-            throw new RuntimeException("El trabajador ya tiene una cita en ese horario");
-        }
+            throw new com.andreutp.centromasajes.exception.BusinessException("El trabajador ya tiene una cita en ese horario");
 
 
 
@@ -96,19 +88,19 @@ public class AppointmentService {
 
     public List<AppointmentModel> getAppointmentsByUser(Long userId) {
         UserModel user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Usuario no encontrado"));
         return appointmentRepository.findByUser(user);
     }
 
     public List<AppointmentModel> getAppointmentsByWorker(Long workerId) {
         UserModel worker = userRepository.findById(workerId)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Trabajador no encontrado"));
         return appointmentRepository.findByWorker(worker);
     }
 
     public AppointmentModel getAppointmentById(Long id) {
         return appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Cita no encontrada"));
     }
 
     public AppointmentModel updateAppointmentStatus(Long id, String status) {

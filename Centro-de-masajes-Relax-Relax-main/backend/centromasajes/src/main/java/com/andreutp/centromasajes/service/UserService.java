@@ -31,27 +31,24 @@ import com.andreutp.centromasajes.model.WorkerAvailabilityModel;
  */
 public class UserService {
 
-    @Autowired
     private final IUserRepository userRepository;
 
-    @Autowired
     private final IRoleRepository roleRepository;
 
-    @Autowired
     private final IAppointmentRepository appointmentRepository;
 
-    @Autowired
     private final IWorkerAvailabilityRepository availabilityRepository;
 
-    @Autowired
-    protected PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
-                       IAppointmentRepository appointmentRepository, IWorkerAvailabilityRepository availabilityRepository) {
+                       IAppointmentRepository appointmentRepository, IWorkerAvailabilityRepository availabilityRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.appointmentRepository = appointmentRepository;
         this.availabilityRepository = availabilityRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserModel> getUsers() {
@@ -75,7 +72,7 @@ public class UserService {
     public UserModel updateById(UserModel request, Long id) {
         // validar existencia antes de usar el Optional
         UserModel user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Usuario no encontrado"));
 
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
@@ -164,7 +161,7 @@ public class UserService {
 
     public UserModel updateWorker(UserModel request, Long id) {
         UserModel worker = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Trabajador no encontrado"));
 
         // Solo cifrar si la contraseña fue cambiada
         if (request.getPassword() != null && !request.getPassword().startsWith("$2a$")) {
@@ -274,7 +271,7 @@ public class UserService {
     public void saveWorkerAvailability(Long workerId, List<WorkerAvailabilityModel> availabilityList) {
 
         UserModel worker = userRepository.findById(workerId)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Trabajador no encontrado"));
 
         // Elimina la disponibilidad anterior
         availabilityRepository.deleteByWorkerId(workerId);

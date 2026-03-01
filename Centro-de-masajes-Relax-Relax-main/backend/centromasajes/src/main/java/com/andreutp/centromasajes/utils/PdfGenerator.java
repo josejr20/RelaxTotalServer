@@ -54,7 +54,7 @@ public class PdfGenerator {
             return baos.toByteArray();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error generando PDF: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando PDF: " + e.getMessage(), e);
         }
     }
 
@@ -186,7 +186,7 @@ public class PdfGenerator {
             return baos.toByteArray();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error generando boleta PDF: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando boleta PDF: " + e.getMessage(), e);
         }
     }
 
@@ -445,7 +445,7 @@ public static byte[] generateInvoiceA4MultiItemsPdf(
         return baos.toByteArray();
 
     } catch (Exception e) {
-        throw new RuntimeException("Error generando factura MULTI-ITEMS: " + e.getMessage(), e);
+        throw new com.andreutp.centromasajes.exception.BusinessException("Error generando factura MULTI-ITEMS: " + e.getMessage(), e);
     }
 
 }

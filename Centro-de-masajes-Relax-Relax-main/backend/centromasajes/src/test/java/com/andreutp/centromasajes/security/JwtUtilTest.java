@@ -23,10 +23,15 @@ import io.jsonwebtoken.security.Keys;
 @ExtendWith(MockitoExtension.class)
 class JwtUtilTest {
 
-    @InjectMocks
     private JwtUtil jwtUtil;
 
     private UserModel testUser;
+
+    @org.junit.jupiter.api.BeforeEach
+    void initUtil() {
+        // provide a fixed secret for deterministic testing
+        jwtUtil = new JwtUtil("testsecrettestsecrettestsecret12");
+    }
 
     @BeforeEach
     void setUp() {
@@ -89,7 +94,7 @@ class JwtUtilTest {
 
     @Test
     void testIsTokenValid_ExpiredToken() {
-        String secretKey = "laClaveSuperSecretaParaJWT_123456789xd";
+        String secretKey = "testsecrettestsecrettestsecret12";
         String expiredToken = Jwts.builder()
                 .setSubject("testuser")
                 .setIssuedAt(new Date(System.currentTimeMillis() - 3600000))

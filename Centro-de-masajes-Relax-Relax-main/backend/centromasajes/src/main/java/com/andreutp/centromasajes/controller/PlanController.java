@@ -11,8 +11,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/plans")
 public class PlanController {
-    @Autowired
-    private PlanService planService;
+    private final PlanService planService;
+
+    public PlanController(PlanService planService) {
+        this.planService = planService;
+    }
 
     @GetMapping
     public ResponseEntity<List<PlanModel>> getAllPlans() {

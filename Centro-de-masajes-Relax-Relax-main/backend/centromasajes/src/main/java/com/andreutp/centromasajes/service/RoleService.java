@@ -12,7 +12,6 @@ import java.util.Optional;
 @Service
 public class RoleService {
 
-    @Autowired
     private final IRoleRepository iroleRepository;
 
 
@@ -42,7 +41,7 @@ public class RoleService {
                     role.setName(updatedRole.getName());
                     return iroleRepository.save(role);
                 })
-                .orElseThrow(() -> new RuntimeException("Role no encontrado"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Role no encontrado"));
     }
 
     // Eliminar un rol

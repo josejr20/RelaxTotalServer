@@ -45,14 +45,14 @@ public class PromotionService {
     // Obtener promoción por ID
     public PromotionModel getPromotionById(Long id) {
         return promotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Promoción no encontrada"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Promoción no encontrada"));
     }
 
     // Actualizar promoción
     public PromotionModel updatePromotion(Long id, PromotionModel updated) {
         // usamos el valor devuelto por orElseThrow en lugar de ignorarlo
         PromotionModel existing = promotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Promoción no encontrada"));
+                .orElseThrow(() -> new com.andreutp.centromasajes.exception.BusinessException("Promoción no encontrada"));
 
         existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
