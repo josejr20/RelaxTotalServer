@@ -35,6 +35,15 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
+    // Constructor sin argumentos para facilitar pruebas unitarias que instancien
+    // la clase directamente. Usa una clave por defecto de 32 bytes válida
+    // para HS256. No debe usarse en producción; Spring inyecta la propiedad.
+    public JwtUtil() {
+        String defaultSecret = "01234567890123456789012345678901"; // 32 chars
+        this.secretKey = defaultSecret;
+        this.key = Keys.hmacShaKeyFor(defaultSecret.getBytes());
+    }
+
     // Genera el token incluyendo userId y role
     public String generateToken(UserModel user) {
         Map<String, Object> claims = new HashMap<>();
