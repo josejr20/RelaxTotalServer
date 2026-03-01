@@ -2,6 +2,7 @@ package com.andreutp.centromasajes.model;
 
 
 import com.andreutp.centromasajes.utils.JsonListConverter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,9 +36,10 @@ public class PlanModel {
   private String tipo;
   private String icono;
 
-  @Column(columnDefinition = "LONGTEXT")
+  @Column(name = "servicios_incluidos", columnDefinition = "LONGTEXT")
+  @JsonProperty("servicios_incluidos")
   @Convert(converter = JsonListConverter.class)
-  private List<String> servicios_incluidos;
+  private List<String> serviciosIncluidos;
 
   @Column(columnDefinition = "LONGTEXT")
   @Convert(converter = JsonListConverter.class)
@@ -47,7 +49,9 @@ public class PlanModel {
   private String estado;
 
   private Integer duracion;
-  private String duracion_unidad;
+  @Column(name = "duracion_unidad")
+  @JsonProperty("duracion_unidad")
+  private String duracionUnidad;
 
   @Column(name = "created_at", nullable = false)
   @Builder.Default

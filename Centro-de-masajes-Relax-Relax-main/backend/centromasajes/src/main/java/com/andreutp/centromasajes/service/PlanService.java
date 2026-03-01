@@ -43,12 +43,12 @@ public class PlanService {
 
         existing.setTipo(newPlan.getTipo());
         existing.setIcono(newPlan.getIcono());
-        existing.setServicios_incluidos(newPlan.getServicios_incluidos());
+        existing.setServiciosIncluidos(newPlan.getServiciosIncluidos());
         existing.setBeneficios(newPlan.getBeneficios());
         existing.setDestacado(newPlan.getDestacado());
         existing.setEstado(newPlan.getEstado());
         existing.setDuracion(newPlan.getDuracion());
-        existing.setDuracion_unidad(newPlan.getDuracion_unidad());
+        existing.setDuracionUnidad(newPlan.getDuracionUnidad());
 
         return planRepository.save(existing);
     }

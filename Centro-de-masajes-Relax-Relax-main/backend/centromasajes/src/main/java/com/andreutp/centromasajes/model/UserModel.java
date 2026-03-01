@@ -1,6 +1,5 @@
 package com.andreutp.centromasajes.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,7 +42,7 @@ public class UserModel {
   private String password;
 
   @NotBlank(message = "El número de teléfono es obligatorio")
-  @Pattern(regexp = "^[0-9]{9}$", message = "El teléfono debe tener 9 dígitos")
+  @Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener 9 dígitos")
   private String phone;
 
   @NotBlank(message = "El correo electrónico es obligatorio")
@@ -53,7 +52,7 @@ public class UserModel {
   private Boolean enabled;
 
   @NotBlank(message = "El DNI es obligatorio")
-  @Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe tener 8 dígitos")
+  @Pattern(regexp = "^\\d{8}$", message = "El DNI debe tener 8 dígitos")
   @Column(unique = true, length = 20)
   private String dni;
 

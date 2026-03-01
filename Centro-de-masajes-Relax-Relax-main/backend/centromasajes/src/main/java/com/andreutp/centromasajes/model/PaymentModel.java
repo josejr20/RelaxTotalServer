@@ -49,7 +49,7 @@ public class PaymentModel {
 
     @Column(name = "payment_date", nullable = false)
     @Builder.Default
-    private LocalDateTime paymentDate = LocalDateTime.now();;
+    private LocalDateTime paymentDate = LocalDateTime.now();
 
     @Column(length = 50)
     private String method;
