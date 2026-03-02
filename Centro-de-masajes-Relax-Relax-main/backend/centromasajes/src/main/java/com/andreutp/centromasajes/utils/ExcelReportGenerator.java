@@ -1,6 +1,7 @@
 package com.andreutp.centromasajes.utils;
 
 import com.andreutp.centromasajes.dao.IAppointmentRepository;
+import com.andreutp.centromasajes.exception.BusinessException;
 import com.andreutp.centromasajes.model.AppointmentModel;
 import com.andreutp.centromasajes.model.PaymentModel;
 import com.andreutp.centromasajes.model.ServiceModel;
@@ -15,12 +16,12 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Utility class for generating Excel reports using Apache POI.  All methods are
- * static; the class cannot be instantiated.  The previous implementation
+ * Utility class for generating Excel reports using Apache POI. All methods are
+ * static; the class cannot be instantiated. The previous implementation
  * contained a great deal of duplicated logic in each report method (workbook
  * creation, header row construction, auto‑sizing columns, exception handling).
  * That code has been centralised into helpers below to satisfy Sonar
- * duplication rules and make maintenance easier.  Methods also include
+ * duplication rules and make maintenance easier. Methods also include
  * javadoc for improved documentation and coverage.
  */
 public final class ExcelReportGenerator {
@@ -29,7 +30,8 @@ public final class ExcelReportGenerator {
     private static final String COLUMN_NAME = "Nombre"; // reused in several reports
 
     // utility class, non-instantiable
-    private ExcelReportGenerator() { }
+    private ExcelReportGenerator() {
+    }
 
     /* helper factories -------------------------------------------------- */
 
@@ -79,18 +81,19 @@ public final class ExcelReportGenerator {
             return out.toByteArray();
         } catch (IOException e) {
             logger.error("Error writing workbook to bytes", e);
-            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel: " + e.getMessage(), e);
+            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel: " + e.getMessage(),
+                    e);
         }
     }
 
     /**
-     * Generate a spreadsheet containing payment information.  Header and row
+     * Generate a spreadsheet containing payment information. Header and row
      * styling is applied uniformly; workbook writing and exception handling are
      * delegated to helpers to avoid repetition.
      */
     public static byte[] generarReportePagos(List<PaymentModel> pagos) {
         logger.info("Generando Excel para {} pagos", pagos.size());
-        String[] columnas = {"ID", "Cliente", "Monto", "Método", "Fecha"};
+        String[] columnas = { "ID", "Cliente", "Monto", "Método", "Fecha" };
 
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
@@ -120,15 +123,15 @@ public final class ExcelReportGenerator {
         }
     }
 
-
     /**
      * Generate a sheet listing client details; uses the appointment repository
      * to calculate the last visit, number of services and type of last service.
      * The repository is provided as a parameter so the method remains static
      * and testable.
      */
-    public static byte[] generarReporteClientes(List<UserModel> clientes, IAppointmentRepository appointmentRepository) {
-        String[] columnas = {"ID", COLUMN_NAME, "Email", "Teléfono", "Última Visita", "Servicios", "Tipo Masaje"};
+    public static byte[] generarReporteClientes(List<UserModel> clientes,
+            IAppointmentRepository appointmentRepository) {
+        String[] columnas = { "ID", COLUMN_NAME, "Email", "Teléfono", "Última Visita", "Servicios", "Tipo Masaje" };
 
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
@@ -145,7 +148,8 @@ public final class ExcelReportGenerator {
                 row.createCell(2).setCellValue(cliente.getEmail());
                 row.createCell(3).setCellValue(cliente.getPhone());
 
-                List<AppointmentModel> citas = appointmentRepository.findByUserIdOrderByAppointmentStartDesc(cliente.getId());
+                List<AppointmentModel> citas = appointmentRepository
+                        .findByUserIdOrderByAppointmentStartDesc(cliente.getId());
                 if (!citas.isEmpty()) {
                     AppointmentModel last = citas.get(0);
                     row.createCell(4).setCellValue(last.getAppointmentStart().toString());
@@ -169,29 +173,51 @@ public final class ExcelReportGenerator {
         }
     }
 
-
-
     // Trabajadores
     public static byte[] generarReporteTrabajadores(List<UserModel> trabajadores) {
-        String[] columnas = {"ID", COLUMN_NAME, "Email", "Teléfono", "DNI", "Especialidad", "Estado", "Experiencia"};
+
+        if (trabajadores == null || trabajadores.isEmpty()) {
+            throw new BusinessException("La lista de trabajadores no puede estar vacía");
+        }
+
+        String[] columnas = {
+                "ID", COLUMN_NAME, "Email", "Teléfono",
+                "DNI", "Especialidad", "Estado", "Experiencia"
+        };
+
         try (Workbook workbook = new XSSFWorkbook()) {
+
             ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Trabajadores");
             createHeaderRow(sheet, columnas, styles);
 
             int rowNum = 1;
-            for (UserModel w : trabajadores) {
-                Row row = sheet.createRow(rowNum);
-                CellStyle rowStyle = (rowNum % 2 == 0) ? styles.normalStyle : styles.alternateStyle;
 
-                row.createCell(0).setCellValue(w.getId());
-                row.createCell(1).setCellValue(w.getUsername());
-                row.createCell(2).setCellValue(w.getEmail());
-                row.createCell(3).setCellValue(w.getPhone());
-                row.createCell(4).setCellValue(w.getDni());
-                row.createCell(5).setCellValue(w.getEspecialidad());
-                row.createCell(6).setCellValue(w.getEstado());
-                row.createCell(7).setCellValue(w.getExperiencia() != null ? w.getExperiencia() : 0);
+            for (UserModel trabajador : trabajadores) {
+
+                // VALIDACIÓN CORRECTA SEGÚN TEST
+                if (trabajador.getUsername() == null) {
+                    throw new BusinessException("El nombre de usuario no puede ser null");
+                }
+
+                Row row = sheet.createRow(rowNum);
+                CellStyle rowStyle = (rowNum % 2 == 0)
+                        ? styles.normalStyle
+                        : styles.alternateStyle;
+
+                row.createCell(0).setCellValue(trabajador.getId());
+                row.createCell(1).setCellValue(trabajador.getUsername());
+                row.createCell(2).setCellValue(trabajador.getEmail());
+                row.createCell(3).setCellValue(trabajador.getPhone());
+                row.createCell(4).setCellValue(trabajador.getDni());
+                row.createCell(5).setCellValue(trabajador.getEspecialidad());
+                row.createCell(6).setCellValue(trabajador.getEstado());
+
+                // experiencia null → escribir 0
+                row.createCell(7).setCellValue(
+                        trabajador.getExperiencia() != null
+                                ? trabajador.getExperiencia()
+                                : 0);
 
                 applyRowStyle(row, rowStyle, columnas.length);
                 rowNum++;
@@ -199,15 +225,18 @@ public final class ExcelReportGenerator {
 
             autoSizeColumns(sheet, columnas.length);
             return toByteArray(workbook);
+
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Error generando reporte de trabajadores", e);
-            throw new com.andreutp.centromasajes.exception.BusinessException("Error generando Excel de trabajadores", e);
+            throw new BusinessException("Error generando Excel de trabajadores", e);
         }
     }
 
     // Servicios
     public static byte[] generarReporteServicios(List<ServiceModel> servicios) {
-        String[] columnas = {"ID", COLUMN_NAME, "Precio", "Duración"};
+        String[] columnas = { "ID", COLUMN_NAME, "Precio", "Duración" };
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Servicios");
@@ -237,7 +266,7 @@ public final class ExcelReportGenerator {
 
     // Reservas
     public static byte[] generarReporteReservas(List<AppointmentModel> reservas) {
-        String[] columnas = {"ID", "Cliente", "Trabajador", "Servicio", "Fecha y Hora", "Estado"};
+        String[] columnas = { "ID", "Cliente", "Trabajador", "Servicio", "Fecha y Hora", "Estado" };
         try (Workbook workbook = new XSSFWorkbook()) {
             ExcelStyles styles = initWorkbook(workbook);
             Sheet sheet = workbook.createSheet("Reservas");
@@ -310,7 +339,5 @@ public final class ExcelReportGenerator {
         styles.alternateStyle = alternateStyle;
         return styles;
     }
-
-
 
 }
