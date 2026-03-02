@@ -39,7 +39,7 @@ public class EmailServiceTest {
 
     @Test
     void testEnviarCorreoSimple_failure() {
-        when(mailSender.send(mimeMessage)).thenThrow(new RuntimeException("bad"));
+        doThrow(new RuntimeException("bad")).when(mailSender).send(mimeMessage);
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 emailService.enviarCorreoSimple("cliente@test.com", "Asunto", "Mensaje"));
         assertTrue(ex.getMessage().contains("Error enviando correo"));
@@ -64,7 +64,7 @@ public class EmailServiceTest {
     @Test
     void testEnviarBoletaConPDF_failure() {
         // simulate send error
-        when(mailSender.send(mimeMessage)).thenThrow(new RuntimeException("smtp failure"));
+        doThrow(new RuntimeException("smtp failure")).when(mailSender).send(mimeMessage);
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 emailService.enviarBoletaConPDF("cliente@test.com", "Boleta", "Juan", "001", 150.0));
         assertTrue(ex.getMessage().contains("Error enviando correo"));
@@ -83,7 +83,7 @@ public class EmailServiceTest {
     @Test
     void testEnviarCorreoConAdjunto_failure() {
         byte[] archivo = "contenido".getBytes();
-        when(mailSender.send(mimeMessage)).thenThrow(new RuntimeException("fail"));
+        doThrow(new RuntimeException("fail")).when(mailSender).send(mimeMessage);
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 emailService.enviarCorreoConAdjunto("cliente@test.com", "Asunto",
                         "Mensaje", archivo, "archivo.txt"));
@@ -110,7 +110,7 @@ public class EmailServiceTest {
 
     @Test
     void testEnviarFacturaA4ConPDF_failure() {
-        when(mailSender.send(mimeMessage)).thenThrow(new RuntimeException("smtp"));
+        doThrow(new RuntimeException("smtp")).when(mailSender).send(mimeMessage);
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 emailService.enviarFacturaA4ConPDF("cliente@test.com", "Juan", "Masajes", 2,
                         300.0, "Visa", "Factura001", "PED123"));
